@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">compose-focuskit</string>
+    <string name="common_network_image">Common Network Image</string>
 </resources>

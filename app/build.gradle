@@ -8,7 +8,7 @@ android {
     buildToolsVersion "31.0.0"
     defaultConfig {
         applicationId "com.seiko.compose.focuskit.demo"
-        minSdk 21
+        minSdk 24
         targetSdk 31
         versionCode 1
         versionName "1.0"

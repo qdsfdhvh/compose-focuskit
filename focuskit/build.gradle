@@ -31,3 +31,5 @@ dependencies {
     api "androidx.compose.runtime:runtime:$compose_version"
     api "androidx.compose.foundation:foundation:$compose_version"
 }
+
+apply from: rootProject.file('gradle/bintray.gradle')

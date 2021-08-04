@@ -1,6 +1,10 @@
 package com.seiko.compose.focuskit
 
 import androidx.compose.foundation.lazy.LazyListState
+import com.seiko.compose.focuskit.internal.FocusChangedDispatcherImpl
+import com.seiko.compose.focuskit.internal.FocusKeyHandlerDispatcherImpl
+import com.seiko.compose.focuskit.internal.handleKey
+import com.seiko.compose.focuskit.internal.onFocusChanged
 
 open class TvFocusItem : FocusChangedDispatcherOwner, FocusKeyHandlerDispatcherOwner,
   TvFocusHandlerOwner {
@@ -15,12 +19,12 @@ open class TvFocusItem : FocusChangedDispatcherOwner, FocusKeyHandlerDispatcherO
       }
     }
 
-  override val focusChangedDispatcher by lazy(LazyThreadSafetyMode.NONE) {
-    FocusChangedDispatcher()
+  override val focusChangedDispatcher: FocusChangedDispatcher by lazy(LazyThreadSafetyMode.NONE) {
+    FocusChangedDispatcherImpl()
   }
 
-  override val focusKeyHandlerDispatcher by lazy(LazyThreadSafetyMode.NONE) {
-    FocusKeyHandlerDispatcher()
+  override val focusKeyHandlerDispatcher: FocusKeyHandlerDispatcher by lazy(LazyThreadSafetyMode.NONE) {
+    FocusKeyHandlerDispatcherImpl()
   }
 
   override var focusHandler = object : TvFocusHandler {

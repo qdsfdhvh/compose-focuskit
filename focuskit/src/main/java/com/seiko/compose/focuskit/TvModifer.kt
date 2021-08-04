@@ -2,6 +2,7 @@ package com.seiko.compose.focuskit
 
 import android.annotation.SuppressLint
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
@@ -46,29 +47,18 @@ fun Modifier.onTvKeyHandler(
   this
 }
 
-inline fun Modifier.handleTvKey(
-  focusItem: TvFocusItem,
-  key: TvControllerKey,
-  crossinline onAction: () -> Boolean
-) = onTvKeyHandler(focusItem) { eventKey, _ ->
-  if (eventKey == key) {
-    onAction()
-  } else false
-}
-
 @SuppressLint("UnnecessaryComposedModifier")
 fun Modifier.tvFocusable(
   focusItem: TvFocusItem,
   focusHandler: (() -> TvFocusHandler)? = null
 ) = composed {
-  val rootTvViewItem = LocalRootTvFocusItem.current
-  SideEffect {
-    Logger.d("$focusItem set TvFocusHandler...")
-    focusHandler?.invoke()?.let {
+  if (focusHandler != null) {
+    val rootTvViewItem = LocalRootTvFocusItem.current
+    LaunchedEffect(focusItem) {
       Logger.d("$focusItem set TvFocusHandler")
-      focusItem.focusHandler = it
+      focusItem.focusHandler = focusHandler()
+      rootTvViewItem.refocus()
     }
-    rootTvViewItem.refocus()
   }
   this
 }
@@ -80,7 +70,8 @@ fun Modifier.tvFocusable(
 ) = composed {
   val focusRequester = requester ?: remember { FocusRequester() }
 
-  val rootFocusItem = rootItem ?: LocalRootTvFocusItem.current
+  val rootFocusItem = rootItem  ?: LocalRootTvFocusItem.current
+  // TODO provide root
 
   SideEffect {
     rootFocusItem.isFocusable = true
@@ -96,21 +87,8 @@ fun Modifier.tvFocusable(
     }
     .onKeyEvent {
       if (KeyEventType.KeyUp == it.type) return@onKeyEvent false
-      val key = it.nativeKeyEvent.keyCode.toControllerKey()
-        ?: return@onKeyEvent false
-      Logger.d("controllerKey=$key")
+      val key = it.nativeKeyEvent.keyCode.toControllerKey() ?: return@onKeyEvent false
+      Logger.d("press[$key]")
       rootFocusItem.handleKey(key)
     }
-}
-
-private fun RootTvFocusItem.handleKey(key: TvControllerKey): Boolean {
-  if (!isFocusable) return false
-
-  getFocusPath().asReversed().forEach { item ->
-    Logger.d("$item handleKey($key, $this)")
-    if (item.focusHandler.handleKey(key, this)) {
-      return true
-    }
-  }
-  return false
 }

@@ -142,6 +142,18 @@ fun RootTvFocusItem.getFocusPath(): List<TvFocusItem> {
   return focusPath
 }
 
+internal fun RootTvFocusItem.handleKey(key: TvControllerKey): Boolean {
+  if (!isFocusable) return false
+
+  getFocusPath().asReversed().forEach { item ->
+    Logger.d("$item handleKey($key, $this)")
+    if (item.focusHandler.handleKey(key, this)) {
+      return true
+    }
+  }
+  return false
+}
+
 private fun List<TvFocusItem>.isSameWith(other: List<TvFocusItem>): Boolean {
   if (size != other.size) return false
   return withIndex().all { it.value.id == other[it.index].id }

@@ -7,10 +7,13 @@ import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.stopScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,53 +26,27 @@ import com.seiko.compose.focuskit.internal.ContainerTvFocusHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-
 private const val SCROLL_ANIMATION_DURATION = 150
-
-@Composable
-fun rememberContainerTvFocusItem(
-  key: Any? = null,
-  container: ContainerTvFocusItem? = null,
-): ContainerTvFocusItem {
-  val containerItem = container ?: LocalRootTvFocusItem.current
-  return remember(key) {
-    ContainerTvFocusItem().apply {
-      containerItem.addChild(this)
-    }
-  }
-}
-
-@Composable
-fun rememberTvFocusItem(
-  key: Any? = null,
-  container: ContainerTvFocusItem? = null,
-): TvFocusItem {
-  val containerItem = container ?: LocalRootTvFocusItem.current
-  return remember(key) {
-    TvFocusItem().apply {
-      containerItem.addChild(this)
-    }
-  }
-}
 
 @Composable
 fun TvLazyColumn(
   container: ContainerTvFocusItem,
   modifier: Modifier = Modifier,
+  coroutineScope: CoroutineScope = rememberCoroutineScope(),
   state: LazyListState = rememberLazyListState(),
   contentPadding: TvPaddingValues = TvPaddingValues(0.dp),
-  scrollBehaviour: ScrollBehaviour = ContainedWithViewport,
+  scrollBehaviour: ScrollBehaviour = ScrollBehaviour.Default,
+  nextFocusBehaviour: NextFocusBehaviour = NextFocusBehaviour.Vertical,
   spaceBetween: Dp = 0.dp,
   content: LazyListScope.() -> Unit
 ) {
-  val coroutineScope = rememberCoroutineScope()
   val density = LocalDensity.current
   LazyColumn(
     modifier = modifier.handleTvScroll(
       container = container,
       state = state,
       contentPadding = contentPadding,
-      nextFocus = VerticalNextFocusBehaviour,
+      nextFocusBehaviour = nextFocusBehaviour,
       scrollBehaviour = scrollBehaviour,
       density = density,
       coroutineScope = coroutineScope
@@ -85,20 +62,21 @@ fun TvLazyColumn(
 fun TvLazyRow(
   container: ContainerTvFocusItem,
   modifier: Modifier = Modifier,
+  coroutineScope: CoroutineScope = rememberCoroutineScope(),
   state: LazyListState = rememberLazyListState(),
   contentPadding: TvPaddingValues = TvPaddingValues(0.dp),
-  scrollBehaviour: ScrollBehaviour = ContainedWithViewport,
+  scrollBehaviour: ScrollBehaviour = ScrollBehaviour.Default,
+  nextFocusBehaviour: NextFocusBehaviour = NextFocusBehaviour.Horizontal,
   spaceBetween: Dp = 0.dp,
   content: LazyListScope.() -> Unit
 ) {
-  val coroutineScope = rememberCoroutineScope()
   val density = LocalDensity.current
   LazyRow(
     modifier = modifier.handleTvScroll(
       container = container,
       state = state,
       contentPadding = contentPadding,
-      nextFocus = HorizontalNextFocusBehaviour,
+      nextFocusBehaviour = nextFocusBehaviour,
       scrollBehaviour = scrollBehaviour,
       density = density,
       coroutineScope = coroutineScope
@@ -115,7 +93,7 @@ private fun Modifier.handleTvScroll(
   container: ContainerTvFocusItem,
   state: LazyListState,
   contentPadding: TvPaddingValues,
-  nextFocus: NextFocusBehaviour,
+  nextFocusBehaviour: NextFocusBehaviour,
   scrollBehaviour: ScrollBehaviour,
   density: Density,
   coroutineScope: CoroutineScope
@@ -128,7 +106,7 @@ private fun Modifier.handleTvScroll(
   }
   handleTvContainerFocus(
     container = container,
-    nextFocus = OnlyWithinLazyListVisibleItems(state, nextFocus),
+    nextFocus = OnlyWithinLazyListVisibleItems(state, nextFocusBehaviour),
     onFocusChange = { rootViewItem, focusIndex ->
       coroutineScope.launch {
         state.scrollAndFocusTv(
@@ -155,7 +133,15 @@ private suspend fun LazyListState.scrollAndFocusTv(
   stopScroll()
 
   val foundItem = layoutInfo.visibleItemsInfo.find { it.index == focusIndex } ?: return
-  val value = scrollBehaviour.calculateScrollBy(this, foundItem, density, contentPadding)
+  var value = scrollBehaviour.calculateScrollBy(this, foundItem, density, contentPadding)
+
+  // 暂时添加些便宜量，确保visibleItems包含下一个item
+  val offset = density.run { 20.dp.roundToPx() }
+  if (value > 0) {
+    value += offset
+  } else {
+    value -= offset
+  }
 
   val focusItem = container.getChild(focusIndex)
   if (focusItem == null) {
@@ -191,13 +177,13 @@ private fun Modifier.handleTvContainerFocus(
 
 private class OnlyWithinLazyListVisibleItems(
   val state: LazyListState,
-  val nextFocus: NextFocusBehaviour
+  val nextFocusBehaviour: NextFocusBehaviour
 ) : NextFocusBehaviour {
   override fun getNext(
     container: ContainerTvFocusItem,
     key: TvControllerKey
   ): NextFocusState {
-    val focusState = nextFocus.getNext(container, key)
+    val focusState = nextFocusBehaviour.getNext(container, key)
     return if (focusState.index == null) {
       if (state.isScrollInProgress) {
         NextFocusState.True

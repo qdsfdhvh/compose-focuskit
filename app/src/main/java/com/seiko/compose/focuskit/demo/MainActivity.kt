@@ -1,6 +1,7 @@
 package com.seiko.compose.focuskit.demo
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -16,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.tooling.preview.Preview
+import com.seiko.compose.focuskit.Logger
 import com.seiko.compose.focuskit.TvLazyColumn
 import com.seiko.compose.focuskit.demo.ui.foundation.TvTabBar
 import com.seiko.compose.focuskit.demo.ui.foundation.TvTitleGroup
@@ -30,6 +32,13 @@ class MainActivity : ComponentActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
+    Logger.setLogger(object : Logger {
+      override fun log(level: Int, msg: String) {
+        Log.println(level, "Focuskit", msg)
+      }
+    })
+
     setContent {
       AnimeTvTheme {
         val focusRequester = remember { FocusRequester() }

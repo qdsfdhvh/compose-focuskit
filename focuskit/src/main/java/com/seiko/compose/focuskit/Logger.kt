@@ -9,26 +9,12 @@ interface Logger {
 
     private var default: Logger? = null
 
-    private val logger: Logger
-      get() {
-        if (default != null) {
-          return default!!
-        }
-
-        default = object : Logger {
-          override fun log(level: Int, msg: String) {
-            Log.println(level, "Focuskit", msg)
-          }
-        }
-        return default!!
-      }
-
     fun setLogger(logger: Logger) {
       default = logger
     }
 
     override fun log(level: Int, msg: String) {
-      logger.log(level, msg)
+      default?.log(level, msg)
     }
   }
 }

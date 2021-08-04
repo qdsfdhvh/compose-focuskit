@@ -38,7 +38,7 @@ fun TvTabBar(
       )
 
       val isSelected = tabIndex == index
-      var isFocused by remember { mutableStateOf(isSelected) }
+      var isFocused by remember { mutableStateOf(false) }
       TvTabBarItem(
         modifier = Modifier
           .onTvFocusChanged(focusItem) {

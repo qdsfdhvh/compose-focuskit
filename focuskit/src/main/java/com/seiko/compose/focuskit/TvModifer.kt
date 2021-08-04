@@ -23,9 +23,10 @@ fun Modifier.onTvFocusChanged(
 ) = composed {
   DisposableEffect(focusItem.id) {
     focusItem.focusChangedDispatcher.addCallback(onFocusChanged)
-    onFocusChanged(focusItem.focusState)
+    Logger.d("$focusItem add focus callback:${onFocusChanged.hashCode()}")
     onDispose {
       focusItem.focusChangedDispatcher.removeCallback(onFocusChanged)
+      Logger.d("$focusItem remove focus callback:${onFocusChanged.hashCode()}")
     }
   }
   this
@@ -38,8 +39,10 @@ fun Modifier.onTvKeyHandler(
 ) = composed {
   DisposableEffect(focusItem.id) {
     focusItem.focusKeyHandlerDispatcher.addCallback(onKeyHandlerCallback)
+    Logger.d("$focusItem add key callback:${onKeyHandlerCallback.hashCode()}")
     onDispose {
       focusItem.focusKeyHandlerDispatcher.removeCallback(onKeyHandlerCallback)
+      Logger.d("$focusItem remove key callback:${onKeyHandlerCallback.hashCode()}")
     }
   }
   this
@@ -63,29 +66,27 @@ fun Modifier.tvFocusable(
 
 @SuppressLint("UnnecessaryComposedModifier")
 fun Modifier.tvFocusable(
-  requester: FocusRequester?,
-  rootItem: RootTvFocusItem? = null,
+  requester: FocusRequester? = null,
 ) = composed {
   val focusRequester = requester ?: remember { FocusRequester() }
-
-  val rootFocusItem = rootItem ?: LocalRootTvFocusItem.current
-  // TODO provide root
+  val rootItem = LocalRootTvFocusItem.current
 
   SideEffect {
-    rootFocusItem.isFocusable = true
+    rootItem.isFocusable = true
     focusRequester.requestFocus()
   }
+
   this
     .focusTarget()
     .focusRequester(focusRequester)
     .onFocusChanged {
       if (it.isFocused) {
-        rootFocusItem.refocus()
+        rootItem.refocus()
       }
     }
     .onKeyEvent {
       val key = controllerKey(it) ?: return@onKeyEvent false
       Logger.d("action($key)")
-      rootFocusItem.handleKey(key)
+      rootItem.handleKey(key)
     }
 }

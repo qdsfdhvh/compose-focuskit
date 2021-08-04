@@ -7,11 +7,12 @@ import androidx.compose.runtime.remember
 fun rememberContainerTvFocusItem(
   key: Any? = null,
   container: ContainerTvFocusItem? = null,
+  index: Int? = null,
 ): ContainerTvFocusItem {
   val containerItem = container ?: LocalRootTvFocusItem.current
   return remember(key) {
-    ContainerTvFocusItem().apply {
-      containerItem.addChild(this)
+    containerItem.getOrCreateChild(index) {
+      ContainerTvFocusItem()
     }
   }
 }
@@ -19,12 +20,12 @@ fun rememberContainerTvFocusItem(
 @Composable
 fun rememberTvFocusItem(
   key: Any? = null,
-  container: ContainerTvFocusItem? = null,
+  container: ContainerTvFocusItem,
+  index: Int?,
 ): TvFocusItem {
-  val containerItem = container ?: LocalRootTvFocusItem.current
   return remember(key) {
-    TvFocusItem().apply {
-      containerItem.addChild(this)
+    container.getOrCreateChild(index) {
+      TvFocusItem()
     }
   }
 }

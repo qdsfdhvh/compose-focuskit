@@ -65,6 +65,22 @@ open class ContainerTvFocusItem : TvFocusItem() {
     return children.lastIndex
   }
 
+  // 在lazyList中，item会重建；
+  // 但现阶段搜寻焦点对focusItem位置和对象都比较敏感；
+  // 暂时根据index来进行复用。
+  open fun <T : TvFocusItem> getOrCreateChild(index: Int?, factory: () -> T): T {
+    if (index != null) {
+      val item = getChild(index)
+      if (item != null) {
+        @Suppress("UNCHECKED_CAST")
+        return item as T
+      }
+    }
+    return factory().apply {
+      addChild(this)
+    }
+  }
+
   override fun toString(): String {
     return "TvContainer($id)"
   }
@@ -90,9 +106,9 @@ class RootTvFocusItem : ContainerTvFocusItem() {
         return
       }
 
-      field.asSequence()
-        .filterNot { prev -> value.any { prev.id == it.id } }
-        .forEach { it.focusState = TvFocusState.None }
+      field.minus(value.toHashSet()).forEach {
+        it.focusState = TvFocusState.None
+      }
 
       field = value
       focusPathReversed = value.asReversed()

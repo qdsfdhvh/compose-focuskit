@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.seiko.compose.focuskit.internal.ContainerTvFocusHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -184,29 +185,9 @@ private fun Modifier.handleTvContainerFocus(
   onFocusChange: (RootTvFocusItem, Int) -> Unit
 ) = this.then(
   tvFocusable(container) {
-    ContainerFocusHandler(container, nextFocus, onFocusChange)
+    ContainerTvFocusHandler(container, nextFocus, onFocusChange)
   }
 )
-
-private class ContainerFocusHandler(
-  private val container: ContainerTvFocusItem,
-  private val nextFocus: NextFocusBehaviour,
-  private val onFocusChange: (RootTvFocusItem, Int) -> Unit
-) : TvFocusHandler {
-  override fun handleKey(key: TvControllerKey, rootItem: RootTvFocusItem): Boolean {
-    val nextFocusState = nextFocus.getNext(container, key)
-    Logger.d("LazyList[$container] find next focus:$nextFocusState")
-
-    if (nextFocusState.index != null) {
-      onFocusChange(rootItem, nextFocusState.index)
-    }
-    return nextFocusState.handleKey
-  }
-
-  override fun getFocus(): TvFocusItem? {
-    return container.getChild(container.focusIndex)
-  }
-}
 
 private class OnlyWithinLazyListVisibleItems(
   val state: LazyListState,

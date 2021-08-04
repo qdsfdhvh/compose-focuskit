@@ -95,6 +95,7 @@ class RootTvFocusItem : ContainerTvFocusItem() {
         .forEach { it.focusState = TvFocusState.None }
 
       field = value
+      focusPathReversed = value.asReversed()
 
       value.forEachIndexed { index, item ->
         item.focusState = if (index == value.lastIndex) {
@@ -104,6 +105,9 @@ class RootTvFocusItem : ContainerTvFocusItem() {
         }
       }
     }
+
+  internal var focusPathReversed: List<TvFocusItem> = emptyList()
+    private set
 
   override fun toString(): String {
     return "TvRoot"
@@ -120,7 +124,7 @@ fun RootTvFocusItem.refocus(): Boolean {
   val foundChild = newFocusPath.lastOrNull()
   val focusPathText = newFocusPath.joinToString(" -> ") { it.toString() }
   if (foundChild == null) {
-    Logger.w("[refocus] Focus- !found , path: $focusPathText")
+    Logger.w("focus !found, focusPath: $focusPathText")
     return false
   }
 
@@ -128,7 +132,7 @@ fun RootTvFocusItem.refocus(): Boolean {
     return false
   }
 
-  Logger.d("[refocus] Focus path: $focusPathText")
+  Logger.d("focusPath: $focusPathText")
   focusPath = newFocusPath
   return true
 }
@@ -149,9 +153,10 @@ fun RootTvFocusItem.getFocusPath(): List<TvFocusItem> {
 internal fun RootTvFocusItem.handleKey(key: TvControllerKey): Boolean {
   if (!isFocusable) return false
 
-  getFocusPath().asReversed().forEach { item ->
-    Logger.d("$item handleKey($key, $this)")
+  focusPathReversed.forEach { item ->
+    Logger.d("handleKey($key) with $item")
     if (item.focusHandler.handleKey(key, this)) {
+      Logger.d("consume($key) with $item")
       return true
     }
   }

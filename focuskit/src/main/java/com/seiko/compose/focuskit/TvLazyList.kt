@@ -132,6 +132,8 @@ private suspend fun LazyListState.scrollAndFocusTv(
 ) {
   stopScroll()
 
+  Logger.d("focus to index(${focusIndex}) with $container")
+
   val foundItem = layoutInfo.visibleItemsInfo.find { it.index == focusIndex } ?: return
   var value = scrollBehaviour.calculateScrollBy(this, foundItem, density, contentPadding)
 
@@ -139,13 +141,13 @@ private suspend fun LazyListState.scrollAndFocusTv(
   val offset = density.run { 20.dp.roundToPx() }
   if (value > 0) {
     value += offset
-  } else {
+  } else if (value < 0) {
     value -= offset
   }
 
   val focusItem = container.getChild(focusIndex)
   if (focusItem == null) {
-    Logger.w("[scrollAndFocusTV] Failed to focus at index: $focusIndex, focused item is null!")
+    Logger.w("failed to focus at index($focusIndex) with $container, focused item is null!")
     return
   }
 
@@ -153,15 +155,13 @@ private suspend fun LazyListState.scrollAndFocusTv(
   container.focusIndex = focusIndex
   if (!rootItem.refocus()) {
     container.focusIndex = prevFocusIndex
-    Logger.w("[scrollAndFocusTV] Failed to focus at index: $focusIndex, $focusItem")
+    Logger.w("failed to focus at index($focusIndex) with $container, root refocus failed")
     return
   }
 
   if (value != 0f) {
+    Logger.d("scroll to index($focusIndex) with $container, value=$value")
     animateScrollBy(value, tween(SCROLL_ANIMATION_DURATION, 0, LinearEasing))
-    Logger.d("[scrollAndFocusTV] Scrolled and focused to $focusIndex, $focusItem")
-  } else {
-    Logger.d("[scrollAndFocusTV] Focused to $focusIndex, $focusItem")
   }
 }
 

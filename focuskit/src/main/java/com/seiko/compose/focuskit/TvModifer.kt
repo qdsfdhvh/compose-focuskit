@@ -12,9 +12,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.type
 
 val LocalRootTvFocusItem = compositionLocalOf { RootTvFocusItem() }
 
@@ -70,7 +68,7 @@ fun Modifier.tvFocusable(
 ) = composed {
   val focusRequester = requester ?: remember { FocusRequester() }
 
-  val rootFocusItem = rootItem  ?: LocalRootTvFocusItem.current
+  val rootFocusItem = rootItem ?: LocalRootTvFocusItem.current
   // TODO provide root
 
   SideEffect {
@@ -86,9 +84,8 @@ fun Modifier.tvFocusable(
       }
     }
     .onKeyEvent {
-      if (KeyEventType.KeyUp == it.type) return@onKeyEvent false
-      val key = it.nativeKeyEvent.keyCode.toControllerKey() ?: return@onKeyEvent false
-      Logger.d("press[$key]")
+      val key = controllerKey(it) ?: return@onKeyEvent false
+      Logger.d("action($key)")
       rootFocusItem.handleKey(key)
     }
 }

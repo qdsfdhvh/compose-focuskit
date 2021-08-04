@@ -30,7 +30,7 @@ open class TvFocusItem : FocusChangedDispatcherOwner, FocusKeyHandlerDispatcherO
   }
 
   override fun toString(): String {
-    return "TvFocusItem($key)"
+    return "TvFocusItem($id)"
   }
 }
 
@@ -62,7 +62,7 @@ open class ContainerTvFocusItem : TvFocusItem() {
   }
 
   override fun toString(): String {
-    return "ContainerTvFocusItem($key)"
+    return "TvContainer($id)"
   }
 
   internal var listState: LazyListState? = null
@@ -102,7 +102,7 @@ class RootTvFocusItem : ContainerTvFocusItem() {
     }
 
   override fun toString(): String {
-    return "RootTvFocusItem"
+    return "TvRoot"
   }
 }
 
@@ -146,6 +146,3 @@ private fun List<TvFocusItem>.isSameWith(other: List<TvFocusItem>): Boolean {
   if (size != other.size) return false
   return withIndex().all { it.value.id == other[it.index].id }
 }
-
-private val TvFocusItem.key: String
-  get() = id.toString(16)

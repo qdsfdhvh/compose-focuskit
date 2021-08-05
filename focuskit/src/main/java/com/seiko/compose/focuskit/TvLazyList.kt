@@ -1,6 +1,7 @@
 package com.seiko.compose.focuskit
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.animateScrollBy
@@ -132,7 +133,7 @@ private suspend fun LazyListState.scrollAndFocusTv(
 ) {
   stopScroll()
 
-  Logger.d("focus to index(${focusIndex}) with $container")
+  Logger.log(Log.DEBUG) { "focus to index(${focusIndex}) with $container" }
 
   val foundItem = layoutInfo.visibleItemsInfo.find { it.index == focusIndex } ?: return
   var value = scrollBehaviour.calculateScrollBy(this, foundItem, density, contentPadding)
@@ -147,7 +148,7 @@ private suspend fun LazyListState.scrollAndFocusTv(
 
   val focusItem = container.getChild(focusIndex)
   if (focusItem == null) {
-    Logger.w("failed to focus at index($focusIndex) with $container, focused item is null!")
+    Logger.log(Log.WARN) { "failed to focus at index($focusIndex) with $container, focused item is null!" }
     return
   }
 
@@ -155,12 +156,12 @@ private suspend fun LazyListState.scrollAndFocusTv(
   container.focusIndex = focusIndex
   if (!rootItem.refocus()) {
     container.focusIndex = prevFocusIndex
-    Logger.w("failed to focus at index($focusIndex) with $container, root refocus failed")
+    Logger.log(Log.WARN) { "failed to focus at index($focusIndex) with $container, root refocus failed" }
     return
   }
 
   if (value != 0f) {
-    Logger.d("scroll to index($focusIndex) with $container, value=$value")
+    Logger.log(Log.INFO) { "scroll to index($focusIndex) with $container, value=$value" }
     animateScrollBy(value, tween(SCROLL_ANIMATION_DURATION, 0, LinearEasing))
   }
 }

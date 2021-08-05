@@ -1,6 +1,7 @@
 package com.seiko.compose.focuskit
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -23,10 +24,10 @@ fun Modifier.onTvFocusChanged(
 ) = composed {
   DisposableEffect(focusItem.id) {
     focusItem.focusChangedDispatcher.addCallback(onFocusChanged)
-    Logger.d("$focusItem add focus callback:${onFocusChanged.hashCode()}")
+    Logger.log(Log.DEBUG) { "$focusItem add focus callback:${onFocusChanged.hashCode()}" }
     onDispose {
       focusItem.focusChangedDispatcher.removeCallback(onFocusChanged)
-      Logger.d("$focusItem remove focus callback:${onFocusChanged.hashCode()}")
+      Logger.log(Log.DEBUG) { "$focusItem remove focus callback:${onFocusChanged.hashCode()}" }
     }
   }
   this
@@ -39,10 +40,10 @@ fun Modifier.onTvKeyHandler(
 ) = composed {
   DisposableEffect(focusItem.id) {
     focusItem.focusKeyHandlerDispatcher.addCallback(onKeyHandlerCallback)
-    Logger.d("$focusItem add key callback:${onKeyHandlerCallback.hashCode()}")
+    Logger.log(Log.DEBUG) { "$focusItem add key callback:${onKeyHandlerCallback.hashCode()}" }
     onDispose {
       focusItem.focusKeyHandlerDispatcher.removeCallback(onKeyHandlerCallback)
-      Logger.d("$focusItem remove key callback:${onKeyHandlerCallback.hashCode()}")
+      Logger.log(Log.DEBUG) { "$focusItem remove key callback:${onKeyHandlerCallback.hashCode()}" }
     }
   }
   this
@@ -56,8 +57,8 @@ fun Modifier.tvFocusable(
   if (focusHandler != null) {
     val rootTvViewItem = LocalRootTvFocusItem.current
     LaunchedEffect(focusItem) {
-      Logger.d("$focusItem set TvFocusHandler")
       focusItem.focusHandler = focusHandler()
+      Logger.log(Log.INFO) { "$focusItem set TvFocusHandler(${focusItem.focusHandler})" }
       rootTvViewItem.refocus()
     }
   }
@@ -86,7 +87,7 @@ fun Modifier.tvFocusable(
     }
     .onKeyEvent {
       val key = controllerKey(it) ?: return@onKeyEvent false
-      Logger.d("action($key)")
+      Logger.log(Log.DEBUG) { "action($key)" }
       rootItem.handleKey(key)
     }
 }

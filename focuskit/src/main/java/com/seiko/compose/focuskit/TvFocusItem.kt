@@ -1,5 +1,6 @@
 package com.seiko.compose.focuskit
 
+import android.util.Log
 import androidx.compose.foundation.lazy.LazyListState
 import com.seiko.compose.focuskit.internal.FocusChangedDispatcherImpl
 import com.seiko.compose.focuskit.internal.FocusKeyHandlerDispatcherImpl
@@ -132,7 +133,7 @@ class RootTvFocusItem : ContainerTvFocusItem() {
 
 fun RootTvFocusItem.refocus(): Boolean {
   if (!isFocusable) {
-    Logger.w("[refocus] Focus ignored, root not focusable")
+    Logger.log(Log.WARN) { "focus ignored, root not focusable" }
     return false
   }
 
@@ -140,7 +141,7 @@ fun RootTvFocusItem.refocus(): Boolean {
   val foundChild = newFocusPath.lastOrNull()
   val focusPathText = newFocusPath.joinToString(" -> ") { it.toString() }
   if (foundChild == null) {
-    Logger.w("focus !found, focusPath: $focusPathText")
+    Logger.log(Log.WARN) { "focus !found, focusPath: $focusPathText" }
     return false
   }
 
@@ -148,7 +149,7 @@ fun RootTvFocusItem.refocus(): Boolean {
     return false
   }
 
-  Logger.d("focusPath: $focusPathText")
+  Logger.log(Log.INFO) { "focusPath: $focusPathText" }
   focusPath = newFocusPath
   return true
 }
@@ -170,9 +171,9 @@ internal fun RootTvFocusItem.handleKey(key: TvControllerKey): Boolean {
   if (!isFocusable) return false
 
   focusPathReversed.forEach { item ->
-    Logger.d("handleKey($key) with $item")
+    Logger.log(Log.DEBUG) { "handleKey($key) with $item" }
     if (item.focusHandler.handleKey(key, this)) {
-      Logger.d("consume($key) with $item")
+      Logger.log(Log.DEBUG) { "consume($key) with $item" }
       return true
     }
   }

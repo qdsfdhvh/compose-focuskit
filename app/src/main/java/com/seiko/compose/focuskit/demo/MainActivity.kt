@@ -15,13 +15,15 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.seiko.compose.focuskit.Logger
 import com.seiko.compose.focuskit.TvLazyColumn
+import com.seiko.compose.focuskit.TvLogger
 import com.seiko.compose.focuskit.demo.ui.foundation.TvTabBar
 import com.seiko.compose.focuskit.demo.ui.foundation.TvTitleGroup
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 import com.seiko.compose.focuskit.rememberContainerTvFocusItem
 import com.seiko.compose.focuskit.tvFocusable
+import java.io.PrintWriter
+import java.io.StringWriter
 
 class MainActivity : ComponentActivity() {
 
@@ -30,9 +32,17 @@ class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    Logger.setLogger(object : Logger {
-      override fun log(level: Int, msg: String) {
-        Log.println(level, "Focuskit", msg)
+    TvLogger.setLogger(object : TvLogger {
+      override var level: Int = Log.DEBUG
+      override fun log(level: Int, msg: String?, throwable: Throwable?) {
+        if (msg != null) {
+          Log.println(level, "Focuskit", msg)
+        }
+        if (throwable != null) {
+          val writer = StringWriter()
+          throwable.printStackTrace(PrintWriter(writer))
+          Log.println(level, "Focuskit", writer.toString())
+        }
       }
     })
 

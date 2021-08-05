@@ -9,7 +9,7 @@ enum class TvControllerKey {
   Up, Down, Left, Right, Enter, Back, Menu, Play
 }
 
-fun controllerKey(keyEvent: NativeKeyEvent): TvControllerKey? = when (keyEvent.keyCode) {
+fun controllerKey(event: NativeKeyEvent): TvControllerKey? = when (event.keyCode) {
   NativeKeyEvent.KEYCODE_DPAD_UP -> TvControllerKey.Up
   NativeKeyEvent.KEYCODE_DPAD_DOWN -> TvControllerKey.Down
   NativeKeyEvent.KEYCODE_DPAD_LEFT -> TvControllerKey.Left

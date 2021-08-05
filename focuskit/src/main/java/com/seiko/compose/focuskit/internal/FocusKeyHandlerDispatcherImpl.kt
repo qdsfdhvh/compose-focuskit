@@ -4,7 +4,6 @@ import com.seiko.compose.focuskit.FocusKeyHandlerCallback
 import com.seiko.compose.focuskit.FocusKeyHandlerDispatcher
 import com.seiko.compose.focuskit.RootTvFocusItem
 import com.seiko.compose.focuskit.TvControllerKey
-import com.seiko.compose.focuskit.TvFocusItem
 
 internal class FocusKeyHandlerDispatcherImpl : FocusKeyHandlerDispatcher {
   private val callbacks = mutableListOf<FocusKeyHandlerCallback>()
@@ -23,12 +22,4 @@ internal class FocusKeyHandlerDispatcherImpl : FocusKeyHandlerDispatcher {
     }
     return false
   }
-}
-
-@Suppress("NOTHING_TO_INLINE")
-internal inline fun TvFocusItem.handleKey(
-  key: TvControllerKey,
-  rootViewItem: RootTvFocusItem
-): Boolean {
-  return focusKeyHandlerDispatcher.handleKey(key, rootViewItem)
 }

@@ -2,10 +2,9 @@ package com.seiko.compose.focuskit
 
 import android.util.Log
 import androidx.compose.foundation.lazy.LazyListState
-import com.seiko.compose.focuskit.internal.FocusChangedDispatcherImpl
+import com.seiko.compose.focuskit.internal.FocusEventDispatcherImpl
 import com.seiko.compose.focuskit.internal.FocusKeyHandlerDispatcherImpl
-import com.seiko.compose.focuskit.internal.handleKey
-import com.seiko.compose.focuskit.internal.onFocusChanged
+import com.seiko.compose.focuskit.internal.onFocusEvent
 
 open class TvFocusItem : FocusChangedDispatcherOwner, FocusKeyHandlerDispatcherOwner,
   TvFocusHandlerOwner {
@@ -14,14 +13,12 @@ open class TvFocusItem : FocusChangedDispatcherOwner, FocusKeyHandlerDispatcherO
 
   var focusState: TvFocusState = TvFocusState.None
     set(value) {
-      if (field != value) {
-        field = value
-        onFocusChanged(value)
-      }
+      field = value
+      onFocusEvent(value)
     }
 
-  override val focusChangedDispatcher: FocusChangedDispatcher by lazy(LazyThreadSafetyMode.NONE) {
-    FocusChangedDispatcherImpl()
+  override val focusEventDispatcher: FocusEventDispatcher by lazy(LazyThreadSafetyMode.NONE) {
+    FocusEventDispatcherImpl()
   }
 
   override val focusKeyHandlerDispatcher: FocusKeyHandlerDispatcher by lazy(LazyThreadSafetyMode.NONE) {
@@ -30,7 +27,7 @@ open class TvFocusItem : FocusChangedDispatcherOwner, FocusKeyHandlerDispatcherO
 
   override var focusHandler = object : TvFocusHandler {
     override fun handleKey(key: TvControllerKey, rootItem: RootTvFocusItem): Boolean {
-      return this@TvFocusItem.handleKey(key, rootItem)
+      return focusKeyHandlerDispatcher.handleKey(key, rootItem)
     }
   }
 
@@ -46,7 +43,7 @@ open class ContainerTvFocusItem : TvFocusItem() {
 
   override var focusHandler = object : TvFocusHandler {
     override fun handleKey(key: TvControllerKey, rootItem: RootTvFocusItem): Boolean {
-      return this@ContainerTvFocusItem.handleKey(key, rootItem)
+      return focusKeyHandlerDispatcher.handleKey(key, rootItem)
     }
 
     override fun getFocus(): TvFocusItem? {

@@ -4,8 +4,10 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -20,14 +22,28 @@ val LocalRootTvFocusItem = compositionLocalOf { RootTvFocusItem() }
 @SuppressLint("UnnecessaryComposedModifier")
 fun Modifier.onTvFocusChanged(
   focusItem: TvFocusItem,
-  onFocusChanged: FocusChangedCallback
+  onFocusChanged: (TvFocusState) -> Unit
+) = composed {
+  val focusState: MutableState<TvFocusState?> = remember { mutableStateOf(null) }
+  Modifier.onTvFocusEvent(focusItem) {
+    if (focusState.value != it) {
+      focusState.value = it
+      onFocusChanged(it)
+    }
+  }
+}
+
+@SuppressLint("UnnecessaryComposedModifier")
+fun Modifier.onTvFocusEvent(
+  focusItem: TvFocusItem,
+  onFocusEvent: FocusEventCallback
 ) = composed {
   DisposableEffect(focusItem.id) {
-    focusItem.focusChangedDispatcher.addCallback(onFocusChanged)
-    Logger.log(Log.DEBUG) { "$focusItem add focus callback:${onFocusChanged.hashCode()}" }
+    focusItem.focusEventDispatcher.addCallback(onFocusEvent)
+    Logger.log(Log.DEBUG) { "$focusItem add focus callback:${onFocusEvent.hashCode()}" }
     onDispose {
-      focusItem.focusChangedDispatcher.removeCallback(onFocusChanged)
-      Logger.log(Log.DEBUG) { "$focusItem remove focus callback:${onFocusChanged.hashCode()}" }
+      focusItem.focusEventDispatcher.removeCallback(onFocusEvent)
+      Logger.log(Log.DEBUG) { "$focusItem remove focus callback:${onFocusEvent.hashCode()}" }
     }
   }
   this

@@ -34,49 +34,49 @@ class MainViewModel : ViewModel() {
     emit(
       listOf(
         Anime(
-          "TSUKIPRO THE ANIMATION 2",
-          "https://ddcdn-img.acplay.net/anime/13696.jpg!client",
-          "/show/5207.html"
+          "斗罗大陆",
+          "http://css.njhzmxx.com/acg/2021/07/17/20210717112154268.jpg",
+          "/show/4066.html"
         ),
         Anime(
-          "小林家的龙女仆S",
-          "https://ddcdn-img.acplay.net/anime/14678.jpg!client",
-          "/show/5207.html"
+          "桃子男孩渡海而来",
+          "http://css.njhzmxx.com/down/1/808165613360701.jpg",
+          "/show/5037.html",
         ),
         Anime(
-          "阴晴不定大哥哥",
-          "https://ddcdn-img.acplay.net/anime/15240.jpg!client",
-          "/show/5207.html"
+          "女友成双",
+          "http://css.njhzmxx.com/acg/2021/03/28/20210328084624549.jpg",
+          "/show/5224.html",
         ),
         Anime(
-          "我们的重制人生",
-          "https://ddcdn-img.acplay.net/anime/15320.jpg!client",
-          "/show/5207.html"
+          "BLUE REFLECTION RAY / 澪",
+          "http://css.njhzmxx.com/acg/2021/02/18/20210218061311802.jpg",
+          "/show/5190.html",
         ),
         Anime(
-          "开挂药师的休闲生活～异世界里开药店～",
-          "https://ddcdn-img.acplay.net/anime/15339.jpg!client",
-          "/show/5207.html"
+          "转生恶役只好拔除破灭旗标 第二季",
+          "http://css.njhzmxx.com/acg/2020/06/21/20200621095007415.jpg",
+          "/show/5009.html",
         ),
         Anime(
-          "致不灭的你",
-          "https://ddcdn-img.acplay.net/anime/15351.jpg!client",
-          "/show/5207.html"
+          "瓦尼塔斯的笔记",
+          "http://css.njhzmxx.com/acg/2021/03/30/20210330083355930.jpg",
+          "/show/5229.html",
         ),
         Anime(
-          "Love Live! Superstar!!",
-          "https://ddcdn-img.acplay.net/anime/15374.jpg!client",
-          "/show/5207.html"
+          "我立于百万生命之上 第二季",
+          "http://css.njhzmxx.com/acg/2021/07/02/20210702110715724.jpg",
+          "/show/5295.html",
         ),
         Anime(
-          "关于我转生变成史莱姆这档事 第二季 2",
-          "https://ddcdn-img.acplay.net/anime/15456.jpg!client",
-          "/show/5207.html"
+          "异世界迷宫黑心企业",
+          "http://css.njhzmxx.com/acg/2021/03/26/20210326053709364.jpg",
+          "/show/5220.html",
         ),
         Anime(
-          "魔法纪录 魔法少女小圆外传 第二季 -觉醒前夜-",
-          "https://ddcdn-img.acplay.net/anime/15472.jpg!client",
-          "/show/5207.html"
+          "白沙的水族馆",
+          "http://css.njhzmxx.com/acg/2021/07/08/20210708111909554.jpg",
+          "/show/5311.html",
         ),
       )
     )

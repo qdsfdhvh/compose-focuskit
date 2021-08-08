@@ -2,7 +2,7 @@
 
 [![](https://jitpack.io/v/qdsfdhvh/compose-focuskit.svg)](https://jitpack.io/#qdsfdhvh/compose-focuskit)
 
-拷贝自[SampleComposeApp](https://github.com/akilarajeshks/SampleComposeApp)
+Thanks [SampleComposeApp](https://github.com/akilarajeshks/SampleComposeApp)
 
 
 ## Getting started 

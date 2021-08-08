@@ -1,58 +1,51 @@
 package com.seiko.compose.focuskit
 
+import android.os.Bundle
 import android.util.Log
-import androidx.compose.foundation.lazy.LazyListState
-import com.seiko.compose.focuskit.internal.FocusEventDispatcherImpl
-import com.seiko.compose.focuskit.internal.FocusKeyHandlerDispatcherImpl
-import com.seiko.compose.focuskit.internal.onFocusEvent
+import androidx.compose.ui.focus.FocusRequester
 
-open class TvFocusItem : FocusChangedDispatcherOwner, FocusKeyHandlerDispatcherOwner,
-  TvFocusHandlerOwner {
+private const val KEY_ITEM_ID = "tv-focus-item:item-id"
+private const val KEY_FOCUS_INDEX = "tv-focus-item:focus-index"
+private const val KEY_CHILDREN = "tv-focus-item:children"
 
-  open val id: Long = System.currentTimeMillis()
+open class TvFocusItem {
 
-  var focusState: TvFocusState = TvFocusState.None
-    set(value) {
-      field = value
-      onFocusEvent(value)
-    }
+  var id: Long = System.currentTimeMillis()
+    private set
 
-  override val focusEventDispatcher: FocusEventDispatcher by lazy(LazyThreadSafetyMode.NONE) {
-    FocusEventDispatcherImpl()
+  internal val focusRequester = FocusRequester()
+
+  var parent: ContainerTvFocusItem? = null
+    internal set
+
+  var root: RootTvFocusItem? = null
+    internal set
+
+  fun requestFocus() = refocus()
+
+  open fun saveState(): Bundle {
+    val bundle = Bundle()
+    bundle.putLong(KEY_ITEM_ID, id)
+    return bundle
   }
 
-  override val focusKeyHandlerDispatcher: FocusKeyHandlerDispatcher by lazy(LazyThreadSafetyMode.NONE) {
-    FocusKeyHandlerDispatcherImpl()
+  open fun restoreState(bundle: Bundle) {
+    id = bundle.getLong(KEY_ITEM_ID)
   }
 
-  override var focusHandler = object : TvFocusHandler {
-    override fun handleKey(key: TvControllerKey, rootItem: RootTvFocusItem): Boolean {
-      return focusKeyHandlerDispatcher.handleKey(key, rootItem)
-    }
-  }
-
-  override fun toString(): String {
-    return "TvFocusItem($id)"
-  }
+  override fun toString(): String = "TvFocusItem($id)"
 }
 
 open class ContainerTvFocusItem : TvFocusItem() {
 
   var focusIndex: Int = 0
+
   private var children = mutableListOf<TvFocusItem>()
-
-  override var focusHandler = object : TvFocusHandler {
-    override fun handleKey(key: TvControllerKey, rootItem: RootTvFocusItem): Boolean {
-      return focusKeyHandlerDispatcher.handleKey(key, rootItem)
-    }
-
-    override fun getFocus(): TvFocusItem? {
-      return getChild(focusIndex)
-    }
-  }
 
   open fun addChild(child: TvFocusItem) {
     children.add(child)
+    child.parent = this
+    child.root = root
   }
 
   open fun getChild(index: Int): TvFocusItem? {
@@ -61,6 +54,10 @@ open class ContainerTvFocusItem : TvFocusItem() {
 
   open fun getLastIndex(): Int? {
     return children.lastIndex
+  }
+
+  open fun getFocus(): TvFocusItem? {
+    return getChild(focusIndex)
   }
 
   // 在lazyList中，item会重建；
@@ -79,105 +76,93 @@ open class ContainerTvFocusItem : TvFocusItem() {
     }
   }
 
-  override fun toString(): String {
-    return "TvContainer($id)"
+  override fun saveState(): Bundle {
+    val bundle = super.saveState()
+    bundle.putInt(KEY_FOCUS_INDEX, focusIndex)
+    bundle.putParcelableArrayList(KEY_CHILDREN, children.mapTo(ArrayList()) { it.saveState() })
+    return bundle
   }
 
-  internal var listState: LazyListState? = null
+  override fun restoreState(bundle: Bundle) {
+    super.restoreState(bundle)
+    focusIndex = bundle.getInt(KEY_FOCUS_INDEX, 0)
+    bundle.getParcelableArrayList<Bundle>(KEY_CHILDREN)!!
+      .forEach { childBundle ->
+        if (childBundle.containsKey(KEY_CHILDREN)) {
+          ContainerTvFocusItem()
+        } else {
+          TvFocusItem()
+        }.run {
+          addChild(this)
+          restoreState(childBundle)
+        }
+      }
+  }
+
+  override fun toString(): String = "TvContainer($id)"
 }
 
 class RootTvFocusItem : ContainerTvFocusItem() {
 
-  var isFocusable: Boolean = false
-    set(value) {
-      if (field != value) {
-        field = value
-        if (value) refocus() else {
-          focusPath = emptyList()
-        }
-      }
-    }
+  init {
+    parent = null
+    root = this
+  }
 
   var focusPath: List<TvFocusItem> = emptyList()
     internal set(value) {
-      if (field.isSameWith(value)) {
+      if (field isSameWith value) {
         return
       }
-
-      field.minus(value.toHashSet()).forEach {
-        it.focusState = TvFocusState.None
-      }
-
       field = value
-      focusPathReversed = value.asReversed()
-
-      value.forEachIndexed { index, item ->
-        item.focusState = if (index == value.lastIndex) {
-          TvFocusState.Active
-        } else {
-          TvFocusState.ActiveParent
-        }
-      }
+      field.lastOrNull()?.focusRequester?.requestFocus()
     }
 
-  internal var focusPathReversed: List<TvFocusItem> = emptyList()
-    private set
-
-  override fun toString(): String {
-    return "TvRoot"
-  }
+  override fun toString(): String = "TvRoot"
 }
 
-fun RootTvFocusItem.refocus(): Boolean {
-  if (!isFocusable) {
-    Logger.log(Log.WARN) { "focus ignored, root not focusable" }
+fun TvFocusItem.refocus(force: Boolean = false): Boolean {
+  val root = root
+  if (root == null) {
+    Logger.log(Log.WARN) { "focusItem not bind root" }
     return false
   }
 
-  val newFocusPath = getFocusPath()
-  val foundChild = newFocusPath.lastOrNull()
-  val focusPathText = newFocusPath.joinToString(" -> ") { it.toString() }
-  if (foundChild == null) {
-    Logger.log(Log.WARN) { "focus !found, focusPath: $focusPathText" }
+  val newFocusPath = when (this) {
+    is RootTvFocusItem -> listOf(this) + focusPathIn
+    is ContainerTvFocusItem -> focusPathOut + focusPathIn
+    else -> focusPathOut
+  }
+  if (!force && root.focusPath isSameWith newFocusPath) {
     return false
   }
 
-  if (focusPath.isSameWith(newFocusPath)) {
-    return false
-  }
-
-  Logger.log(Log.INFO) { "focusPath: $focusPathText" }
-  focusPath = newFocusPath
+  Logger.log(Log.INFO) { "focusPath: ${newFocusPath.joinToString(" -> ") { it.toString() }}" }
+  root.focusPath = newFocusPath
   return true
 }
 
-fun RootTvFocusItem.getFocusPath(): List<TvFocusItem> {
-  if (!isFocusable) return emptyList()
-
-  val focusPath = mutableListOf<TvFocusItem>(this)
-
-  var focused = focusHandler.getFocus()
-  while (focused != null) {
-    focusPath.add(focused)
-    focused = focused.focusHandler.getFocus()
-  }
-  return focusPath
-}
-
-internal fun RootTvFocusItem.handleKey(key: TvControllerKey): Boolean {
-  if (!isFocusable) return false
-
-  focusPathReversed.forEach { item ->
-    Logger.log(Log.DEBUG) { "handleKey($key) with $item" }
-    if (item.focusHandler.handleKey(key, this)) {
-      Logger.log(Log.DEBUG) { "consume($key) with $item" }
-      return true
+private val ContainerTvFocusItem.focusPathIn: List<TvFocusItem>
+  get() = mutableListOf<TvFocusItem>().apply {
+    var focused = getFocus()
+    while (focused != null) {
+      add(focused)
+      focused = if (focused is ContainerTvFocusItem) {
+        focused.getFocus()
+      } else null
     }
   }
-  return false
-}
 
-private fun List<TvFocusItem>.isSameWith(other: List<TvFocusItem>): Boolean {
+private val TvFocusItem.focusPathOut: List<TvFocusItem>
+  get() = mutableListOf(this).apply {
+    var focused = parent
+    while (focused != null) {
+      add(0, focused)
+      focused = focused.parent
+    }
+  }
+
+private infix fun List<TvFocusItem>.isSameWith(other: List<TvFocusItem>): Boolean {
   if (size != other.size) return false
   return withIndex().all { it.value.id == other[it.index].id }
 }

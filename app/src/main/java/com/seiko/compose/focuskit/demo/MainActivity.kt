@@ -10,20 +10,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
-import com.seiko.compose.focuskit.TvLazyColumn
-import com.seiko.compose.focuskit.TvLogger
+import com.seiko.compose.focuskit.*
 import com.seiko.compose.focuskit.demo.model.AnimeDetail
 import com.seiko.compose.focuskit.demo.ui.foundation.*
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
-import com.seiko.compose.focuskit.rememberContainerTvFocusItem
-import com.seiko.compose.focuskit.tvFocusable
 import java.io.PrintWriter
 import java.io.StringWriter
 
@@ -61,9 +55,7 @@ class MainActivity : ComponentActivity() {
           LocalAppNavigator provides navController
         ) {
           Surface(
-            modifier = Modifier
-              .fillMaxSize()
-              .tvFocusable(),
+            modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colors.background
           ) {
             Router(navController, viewModel)
@@ -99,13 +91,20 @@ fun HomeScreen(
   tabList: List<String> = emptyList(),
   animeGroup: AnimeGroup = emptyList(),
 ) {
-  val container = rememberContainerTvFocusItem()
+  val navController = LocalAppNavigator.current
+  val rootFocusItem = rememberRootTvFocusItem()
 
-  TvLazyColumn(container = container) {
+  TvLazyColumn(
+    container = rootFocusItem,
+    modifier = Modifier
+      .handleTvKey(TvControllerKey.Back) {
+        navController.popBackStack()
+      }
+  ) {
     item {
       val tabContainer = rememberContainerTvFocusItem(
         key = Unit,
-        container = container,
+        container = rootFocusItem,
         index = 0
       )
 
@@ -117,29 +116,43 @@ fun HomeScreen(
     itemsIndexed(animeGroup) { index, pair ->
       val groupContainer = rememberContainerTvFocusItem(
         key = pair,
-        container = container,
+        container = rootFocusItem,
         index = index + 1
       )
 
       val (title, animes) = pair
       TvTitleGroup(
         parent = groupContainer,
-        modifier = Modifier.tvFocusable(groupContainer),
         title = title,
         list = animes,
       )
+    }
+  }
+
+  LaunchedEffect(Unit) {
+    Log.d("Demo", "HomeScreen onActive1")
+    rootFocusItem.refocus(true)
+  }
+
+  DisposableEffect(Unit) {
+    Log.d("Demo", "HomeScreen onActive2")
+    onDispose {
+      Log.d("Demo", "HomeScreen onDispose")
     }
   }
 }
 
 @Composable
 fun DetailScreen(detail: AnimeDetail) {
-  val container = rememberContainerTvFocusItem()
+  val navController = LocalAppNavigator.current
+  val rootFocusItem = rememberRootTvFocusItem()
 
   TvLazyColumn(
-    container = container,
+    container = rootFocusItem,
     modifier = Modifier
-      .fillMaxSize(),
+      .handleTvKey(TvControllerKey.Back) {
+        navController.popBackStack()
+      }
   ) {
     item {
       TvMovieInfo(
@@ -155,7 +168,7 @@ fun DetailScreen(detail: AnimeDetail) {
     item {
       val episodeContainer = rememberContainerTvFocusItem(
         key = Unit,
-        container = container,
+        container = rootFocusItem,
         index = 0
       )
 
@@ -169,7 +182,7 @@ fun DetailScreen(detail: AnimeDetail) {
     item {
       val relatedContainer = rememberContainerTvFocusItem(
         key = Unit,
-        container = container,
+        container = rootFocusItem,
         index = 1
       )
 
@@ -179,5 +192,9 @@ fun DetailScreen(detail: AnimeDetail) {
         list = detail.relatedList
       )
     }
+  }
+
+  LaunchedEffect(detail) {
+    rootFocusItem.refocus(true)
   }
 }

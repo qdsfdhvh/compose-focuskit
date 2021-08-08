@@ -3,6 +3,7 @@ package com.seiko.compose.focuskit.demo.ui.foundation
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.MaterialTheme
@@ -17,11 +18,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.seiko.compose.focuskit.*
+import com.seiko.compose.focuskit.demo.LocalAppNavigator
 import com.seiko.compose.focuskit.demo.model.Anime
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 import com.seiko.compose.focuskit.demo.ui.theme.backgroundColor
@@ -53,13 +56,17 @@ fun TvTitleGroup(
         var isFocused by remember { mutableStateOf(false) }
         GroupItem(
           modifier = Modifier
-            .tvHandleKey(focusItem, TvControllerKey.Enter) {
+            .clickable {
+              navController.navigate(item.actionUrl)
+            }
+            .handleTvKey(TvControllerKey.Enter) {
               navController.navigate(item.actionUrl)
               true
             }
-            .onTvFocusChanged(focusItem) {
+            .onFocusChanged {
               isFocused = it.isFocused
-            },
+            }
+            .tvFocusTarget(focusItem),
           item = item,
           isFocused = isFocused,
         )

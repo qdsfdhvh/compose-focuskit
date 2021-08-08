@@ -1,8 +1,5 @@
 package com.seiko.compose.focuskit
 
-import com.seiko.compose.focuskit.internal.HorizontalNextFocusBehaviour
-import com.seiko.compose.focuskit.internal.VerticalNextFocusBehaviour
-
 data class NextFocusState(val index: Int?, val handleKey: Boolean) {
   companion object {
     val True = NextFocusState(null, true)
@@ -14,7 +11,37 @@ interface NextFocusBehaviour {
   fun getNext(container: ContainerTvFocusItem, key: TvControllerKey): NextFocusState
 
   companion object {
-    val Horizontal: NextFocusBehaviour = HorizontalNextFocusBehaviour
-    val Vertical: NextFocusBehaviour = VerticalNextFocusBehaviour
+
+    val Horizontal: NextFocusBehaviour = object : NextFocusBehaviour {
+      override fun getNext(container: ContainerTvFocusItem, key: TvControllerKey): NextFocusState {
+        val focusIndex = container.focusIndex
+        val lastIndex = container.getLastIndex()
+        return when {
+          key === TvControllerKey.Left && focusIndex > 0 -> {
+            NextFocusState(focusIndex - 1, true)
+          }
+          key === TvControllerKey.Right && (lastIndex == null || focusIndex < lastIndex) -> {
+            NextFocusState(focusIndex + 1, true)
+          }
+          else -> NextFocusState.False
+        }
+      }
+    }
+
+    val Vertical: NextFocusBehaviour = object : NextFocusBehaviour {
+      override fun getNext(container: ContainerTvFocusItem, key: TvControllerKey): NextFocusState {
+        val focusIndex = container.focusIndex
+        val lastIndex = container.getLastIndex()
+        return when {
+          key === TvControllerKey.Up && focusIndex > 0 -> {
+            NextFocusState(focusIndex - 1, true)
+          }
+          key === TvControllerKey.Down && (lastIndex == null || focusIndex < lastIndex) -> {
+            NextFocusState(focusIndex + 1, true)
+          }
+          else -> NextFocusState.False
+        }
+      }
+    }
   }
 }

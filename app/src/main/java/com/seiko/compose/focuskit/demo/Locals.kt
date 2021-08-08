@@ -1,4 +1,4 @@
-package com.seiko.compose.focuskit.demo.ui.foundation
+package com.seiko.compose.focuskit.demo
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.navigation.NavController

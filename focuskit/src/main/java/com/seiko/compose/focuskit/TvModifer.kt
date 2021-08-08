@@ -1,12 +1,9 @@
 package com.seiko.compose.focuskit
 
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.input.key.onKeyEvent
-
-val LocalRootTvFocusItem = compositionLocalOf { RootTvFocusItem() }
 
 fun Modifier.tvFocusTarget(
   focusItem: TvFocusItem

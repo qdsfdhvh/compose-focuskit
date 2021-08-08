@@ -22,12 +22,11 @@ private fun rootTvFocusItemSaver(): Saver<RootTvFocusItem, *> = Saver(
 @Composable
 fun rememberContainerTvFocusItem(
   key: Any? = null,
-  container: ContainerTvFocusItem? = null,
+  container: ContainerTvFocusItem = rememberRootTvFocusItem(),
   index: Int? = null,
 ): ContainerTvFocusItem {
-  val containerItem = container ?: LocalRootTvFocusItem.current
   return remember(key) {
-    containerItem.getOrCreateChild(index) {
+    container.getOrCreateChild(index) {
       ContainerTvFocusItem()
     }
   }

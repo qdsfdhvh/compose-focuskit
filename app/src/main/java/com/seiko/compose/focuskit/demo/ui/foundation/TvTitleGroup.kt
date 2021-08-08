@@ -3,13 +3,7 @@ package com.seiko.compose.focuskit.demo.ui.foundation
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -23,28 +17,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.seiko.compose.focuskit.ContainerTvFocusItem
-import com.seiko.compose.focuskit.TvLazyRow
+import com.seiko.compose.focuskit.*
 import com.seiko.compose.focuskit.demo.model.Anime
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 import com.seiko.compose.focuskit.demo.ui.theme.backgroundColor
-import com.seiko.compose.focuskit.onTvFocusChanged
-import com.seiko.compose.focuskit.rememberContainerTvFocusItem
-import com.seiko.compose.focuskit.rememberTvFocusItem
 
 @Composable
 fun TvTitleGroup(
   title: String,
   list: List<Anime>,
   modifier: Modifier = Modifier,
-  container: ContainerTvFocusItem? = null
+  parent: ContainerTvFocusItem? = null
 ) {
-  val containerItem = container ?: rememberContainerTvFocusItem()
+  val container = parent ?: rememberContainerTvFocusItem()
+
+  val navController = LocalAppNavigator.current
 
   Column(modifier = modifier) {
     Text(
@@ -52,17 +43,20 @@ fun TvTitleGroup(
       style = MaterialTheme.typography.h6,
       modifier = Modifier.padding(start = 15.dp, top = 10.dp),
     )
-    TvLazyRow(containerItem) {
+    TvLazyRow(container) {
       itemsIndexed(list) { index, item ->
         val focusItem = rememberTvFocusItem(
           key = item,
-          container = containerItem,
+          container = container,
           index = index
         )
         var isFocused by remember { mutableStateOf(false) }
         GroupItem(
           modifier = Modifier
-            .onFocusChanged { }
+            .tvHandleKey(focusItem, TvControllerKey.Enter) {
+              navController.navigate(item.actionUrl)
+              true
+            }
             .onTvFocusChanged(focusItem) {
               isFocused = it.isFocused
             },
@@ -118,6 +112,7 @@ fun GroupItemPreview() {
           Anime(
             title = "妖精的尾巴",
             imageUrl = "http://css.njhzmxx.com/comic/focus/2018/10/201810070913.jpg",
+            actionUrl = "",
           ),
           isFocused = true
         )
@@ -125,6 +120,7 @@ fun GroupItemPreview() {
           Anime(
             title = "妖精的尾巴",
             imageUrl = "http://css.njhzmxx.com/comic/focus/2018/10/201810070913.jpg",
+            actionUrl = "",
           ),
           isFocused = false
         )
@@ -144,10 +140,12 @@ fun TvTitleGroupPreview() {
           Anime(
             title = "妖精的尾巴",
             imageUrl = "http://css.njhzmxx.com/comic/focus/2018/10/201810070913.jpg",
+            actionUrl = "",
           ),
           Anime(
             title = "妖精的尾巴",
             imageUrl = "http://css.njhzmxx.com/comic/focus/2018/10/201810070913.jpg",
+            actionUrl = "",
           )
         )
       )

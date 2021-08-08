@@ -23,17 +23,17 @@ import com.seiko.compose.focuskit.demo.ui.theme.backgroundColor
 @Composable
 fun TvTabBar(
   tabList: List<String>,
-  container: ContainerTvFocusItem? = null
+  parent: ContainerTvFocusItem? = null
 ) {
-  val containerItem = container ?: rememberContainerTvFocusItem()
+  val container = parent ?: rememberContainerTvFocusItem()
 
-  var tabIndex by remember { mutableStateOf(containerItem.focusIndex) }
+  var tabIndex by remember { mutableStateOf(container.focusIndex) }
 
-  TvLazyRow(containerItem) {
+  TvLazyRow(container) {
     itemsIndexed(tabList) { index, title ->
       val focusItem = rememberTvFocusItem(
         key = title + index,
-        container = containerItem,
+        container = container,
         index = index
       )
 

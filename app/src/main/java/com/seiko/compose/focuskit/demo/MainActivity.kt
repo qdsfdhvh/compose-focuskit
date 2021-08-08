@@ -129,7 +129,7 @@ fun HomeScreen(
     }
   }
 
-  LaunchedEffect(Unit) {
+  LaunchedEffect(tabList) {
     Log.d("Demo", "HomeScreen onActive1")
     rootFocusItem.refocus(true)
   }

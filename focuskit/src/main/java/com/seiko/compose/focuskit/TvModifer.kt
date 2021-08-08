@@ -65,6 +65,16 @@ fun Modifier.onTvKeyHandler(
   this
 }
 
+inline fun Modifier.tvHandleKey(
+  focusItem: TvFocusItem,
+  key: TvControllerKey,
+  crossinline onAction: () -> Boolean
+) = onTvKeyHandler(focusItem) { eventKey, _ ->
+  if (eventKey == key) {
+    onAction()
+  } else false
+}
+
 @SuppressLint("UnnecessaryComposedModifier")
 fun Modifier.tvFocusable(
   focusItem: TvFocusItem,

@@ -2,6 +2,7 @@ package com.seiko.compose.focuskit.demo.ui.foundation
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -18,6 +19,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.seiko.compose.focuskit.*
+import com.seiko.compose.focuskit.demo.LocalAppNavigator
 import com.seiko.compose.focuskit.demo.model.AnimeEpisode
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 import com.seiko.compose.focuskit.demo.ui.theme.backgroundColor
@@ -28,6 +30,7 @@ fun TvEpisodeList(
   list: List<AnimeEpisode>,
   parent: ContainerTvFocusItem? = null
 ) {
+  val navController = LocalAppNavigator.current
   val container = parent ?: rememberContainerTvFocusItem()
 
   Column {
@@ -48,6 +51,13 @@ fun TvEpisodeList(
         var isFocused by remember { mutableStateOf(false) }
         EpisodeItem(
           modifier = Modifier
+            .clickable {
+              navController.navigate(item.actionUrl)
+            }
+            .handleTvKey(TvControllerKey.Enter) {
+              navController.navigate(item.actionUrl)
+              true
+            }
             .onFocusChanged {
               isFocused = it.isFocused
             }

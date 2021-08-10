@@ -115,7 +115,13 @@ class RootTvFocusItem : ContainerTvFocusItem() {
         return
       }
       field = value
-      field.lastOrNull()?.focusRequester?.requestFocus()
+      field.lastOrNull()?.focusRequester?.let {
+        try {
+          it.requestFocus()
+        } catch (e: IllegalStateException) {
+          Logger.log(e)
+        }
+      }
     }
 
   override fun toString(): String = "TvRoot"

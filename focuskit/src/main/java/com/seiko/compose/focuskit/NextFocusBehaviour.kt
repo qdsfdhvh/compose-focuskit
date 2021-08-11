@@ -1,45 +1,27 @@
 package com.seiko.compose.focuskit
 
-data class NextFocusState(val index: Int?, val handleKey: Boolean) {
-  companion object {
-    val True = NextFocusState(null, true)
-    val False = NextFocusState(null, false)
-  }
-}
+import androidx.compose.foundation.lazy.LazyListState
 
 interface NextFocusBehaviour {
-  fun getNext(container: ContainerTvFocusItem, key: TvControllerKey): NextFocusState
+  fun getNext(key: TvControllerKey, state: LazyListState, index: Int): Int?
 
   companion object {
-
     val Horizontal: NextFocusBehaviour = object : NextFocusBehaviour {
-      override fun getNext(container: ContainerTvFocusItem, key: TvControllerKey): NextFocusState {
-        val focusIndex = container.focusIndex
-        val lastIndex = container.getLastIndex()
-        return when {
-          key === TvControllerKey.Left && focusIndex > 0 -> {
-            NextFocusState(focusIndex - 1, true)
-          }
-          key === TvControllerKey.Right && (lastIndex == null || focusIndex < lastIndex) -> {
-            NextFocusState(focusIndex + 1, true)
-          }
-          else -> NextFocusState.False
+      override fun getNext(key: TvControllerKey, state: LazyListState, index: Int): Int? {
+        return when (key) {
+          TvControllerKey.Left -> index - 1
+          TvControllerKey.Right -> index + 1
+          else -> null
         }
       }
     }
 
     val Vertical: NextFocusBehaviour = object : NextFocusBehaviour {
-      override fun getNext(container: ContainerTvFocusItem, key: TvControllerKey): NextFocusState {
-        val focusIndex = container.focusIndex
-        val lastIndex = container.getLastIndex()
-        return when {
-          key === TvControllerKey.Up && focusIndex > 0 -> {
-            NextFocusState(focusIndex - 1, true)
-          }
-          key === TvControllerKey.Down && (lastIndex == null || focusIndex < lastIndex) -> {
-            NextFocusState(focusIndex + 1, true)
-          }
-          else -> NextFocusState.False
+      override fun getNext(key: TvControllerKey, state: LazyListState, index: Int): Int? {
+        return when (key) {
+          TvControllerKey.Up -> index - 1
+          TvControllerKey.Down -> index + 1
+          else -> null
         }
       }
     }

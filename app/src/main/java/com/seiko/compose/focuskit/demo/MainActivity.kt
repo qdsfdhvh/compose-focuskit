@@ -162,6 +162,12 @@ fun DetailScreen(detail: AnimeDetail) {
       }
   ) {
     item {
+      val infoContainer = rememberContainerTvFocusItem(
+        key = Unit,
+        container = rootFocusItem,
+        index = 0
+      )
+
       TvMovieInfo(
         title = detail.title,
         cover = detail.cover,
@@ -169,6 +175,7 @@ fun DetailScreen(detail: AnimeDetail) {
         state = detail.state,
         tags = detail.tags,
         description = detail.description,
+        focusParent = infoContainer,
       )
     }
 
@@ -176,7 +183,7 @@ fun DetailScreen(detail: AnimeDetail) {
       val episodeContainer = rememberContainerTvFocusItem(
         key = Unit,
         container = rootFocusItem,
-        index = 0
+        index = 1
       )
 
       TvEpisodeList(
@@ -190,7 +197,7 @@ fun DetailScreen(detail: AnimeDetail) {
       val relatedContainer = rememberContainerTvFocusItem(
         key = Unit,
         container = rootFocusItem,
-        index = 1
+        index = 2
       )
 
       TvTitleGroup(

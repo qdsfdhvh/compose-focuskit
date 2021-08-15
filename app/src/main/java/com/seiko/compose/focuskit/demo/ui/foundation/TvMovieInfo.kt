@@ -14,7 +14,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import com.seiko.compose.focuskit.ContainerTvFocusItem
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
+import com.seiko.compose.focuskit.rememberContainerTvFocusItem
+import com.seiko.compose.focuskit.tvFocusTarget
 
 @Composable
 fun TvMovieInfo(
@@ -25,8 +28,15 @@ fun TvMovieInfo(
   state: String = "",
   tags: List<String> = emptyList(),
   description: String = "",
+  focusParent: ContainerTvFocusItem? = null,
 ) {
-  ConstraintLayout(modifier = modifier.fillMaxSize()) {
+  val container = focusParent ?: rememberContainerTvFocusItem()
+
+  ConstraintLayout(
+    modifier = modifier
+      .fillMaxSize()
+      .tvFocusTarget(container)
+  ) {
     val (
       titleRef, coverRef,
       rowRef,

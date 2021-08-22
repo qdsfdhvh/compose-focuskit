@@ -6,22 +6,21 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.focusTarget
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.seiko.compose.focuskit.*
 import com.seiko.compose.focuskit.demo.model.AnimeDetail
 import com.seiko.compose.focuskit.demo.ui.foundation.*
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
+import com.seiko.compose.player.TvVideoPlayer
+import com.seiko.compose.player.VideoPlayerSource
 import java.io.PrintWriter
 import java.io.StringWriter
 
@@ -215,41 +214,10 @@ fun DetailScreen(detail: AnimeDetail) {
 
 @Composable
 fun PlayerScreen() {
-  val navController = LocalAppNavigator.current
-  var openDialog by remember { mutableStateOf(false) }
-  val focusRequester = remember { FocusRequester() }
-
-  Box(
-    modifier = Modifier
-      .handleTvKey(TvControllerKey.Back) {
-        if (!openDialog) {
-          openDialog = true
-        }
-        true
-      }
-      .focusRequester(focusRequester)
-      .focusTarget(),
-  ) {
-    val playUrl = remember {
-      "https://v-cdn.zjol.com.cn/277001.mp4"
-    }
-    TvVideoPlayer(playUrl)
-
-    if (openDialog) {
-      TvSelectDialog(
-        text = "是否退出播放？",
-        onCenterClick = {
-          openDialog = false
-          navController.popBackStack()
-        },
-        onCancelClick = {
-          openDialog = false
-        },
-      )
-    }
+  val source = remember {
+    VideoPlayerSource.Network(
+      url = "https://sf3-ttcdn-tos.pstatp.com/obj/tos-cn-v-0004/45e026bf916e4da189253ef46c605426"
+    )
   }
-
-  LaunchedEffect(Unit) {
-    focusRequester.requestFocus()
-  }
+  TvVideoPlayer(source = source)
 }

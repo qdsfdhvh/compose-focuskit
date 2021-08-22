@@ -8,6 +8,7 @@ pluginManagement {
         id 'com.android.application' version '7.1.0-alpha08'
         id 'com.android.library' version '7.1.0-alpha08'
         id 'org.jetbrains.kotlin.android' version '1.5.21'
+        id 'org.jetbrains.kotlin.plugin.parcelize' version '1.5.21'
     }
 }
 dependencyResolutionManagement {
@@ -16,7 +17,9 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
     }
+
 }
 rootProject.name = "compose-focuskit"
 include ':app'
 include ':focuskit'
+include ':player'

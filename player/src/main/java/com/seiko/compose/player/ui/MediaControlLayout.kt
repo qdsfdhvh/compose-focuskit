@@ -1,6 +1,8 @@
 package com.seiko.compose.player.ui
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -24,18 +26,23 @@ fun MediaControlLayout(modifier: Modifier = Modifier) {
   val duration = remember(state.duration) { getDurationString(state.duration) }
 
   Box(modifier = modifier) {
-    Column(modifier = Modifier.align(Alignment.BottomCenter).padding(4.dp)) {
-      TimeTextBar(
-        position = position,
-        duration = duration
-      )
-      AppSeekBar(
-        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-        secondaryProgress = state.bufferedPosition,
-        progress = state.currentPosition,
-        max = state.duration,
-      )
-    }
+    SmallSeekBar(
+      modifier = Modifier
+        .fillMaxWidth()
+        .align(Alignment.BottomCenter)
+        .padding(bottom = 4.dp, start = 4.dp, end = 4.dp),
+      secondaryProgress = state.bufferedPosition,
+      progress = state.currentPosition,
+      max = state.duration,
+    )
+    TimeTextBar(
+      modifier = Modifier
+        .fillMaxWidth()
+        .align(Alignment.BottomCenter)
+        .padding(bottom = 8.dp,start = 4.dp, end = 4.dp),
+      position = position,
+      duration = duration
+    )
     PlayToggleButton(
       modifier = Modifier.align(Alignment.Center),
       isPlaying = state.isPlaying,

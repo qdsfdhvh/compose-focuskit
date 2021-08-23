@@ -9,8 +9,9 @@ interface VideoPlayerController {
   fun playToggle()
   fun reset()
   fun seekTo(positionMs: Long)
-  fun quickSeekForward()
-  fun quickSeekRewind()
+  fun seekForward()
+  fun seekRewind()
+  fun seekFinish()
   fun showControl()
   fun hideControl()
 }

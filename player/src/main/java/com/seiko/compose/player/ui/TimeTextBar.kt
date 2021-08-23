@@ -11,9 +11,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
-fun TimeTextBar(position: String, duration: String) {
+fun TimeTextBar(
+  position: String,
+  duration: String,
+  modifier: Modifier = Modifier,
+) {
   Row(
-    modifier = Modifier.fillMaxWidth(),
+    modifier = modifier.fillMaxWidth(),
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
     TimeText(position)

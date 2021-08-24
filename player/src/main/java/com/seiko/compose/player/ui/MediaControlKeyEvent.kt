@@ -5,11 +5,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import com.seiko.compose.focuskit.TvControllerKey
 import com.seiko.compose.focuskit.onTvKeyEvent
 import com.seiko.compose.player.LocalVideoPlayerController
@@ -19,6 +19,8 @@ import com.seiko.compose.player.VideoSeekDirection
 fun MediaControlKeyEvent(modifier: Modifier = Modifier) {
   val controller = LocalVideoPlayerController.current
   val state by controller.state.collectAsState()
+
+  val focusRequester = remember { FocusRequester() }
 
   Box(
     modifier = modifier
@@ -50,15 +52,26 @@ fun MediaControlKeyEvent(modifier: Modifier = Modifier) {
             controller.seekForward()
             true
           }
+          TvControllerKey.Back -> {
+            if (state.controlsVisible) {
+              controller.hideControl()
+              true
+            } else false
+          }
           else -> false
         }
       }
+      .focusRequester(focusRequester)
       .focusable(),
   ) {
     VideoSeekAnimation(
       modifier = Modifier.matchParentSize(),
       seekDirection = state.seekDirection,
     )
+  }
+
+  SideEffect {
+    focusRequester.requestFocus()
   }
 }
 

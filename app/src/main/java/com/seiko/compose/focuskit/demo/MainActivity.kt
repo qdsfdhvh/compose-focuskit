@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.MaterialTheme
@@ -21,6 +22,8 @@ import com.seiko.compose.focuskit.demo.ui.foundation.*
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 import com.seiko.compose.player.TvVideoPlayer
 import com.seiko.compose.player.VideoPlayerSource
+import com.seiko.compose.player.rememberPlayer
+import com.seiko.compose.player.rememberVideoPlayerController
 import java.io.PrintWriter
 import java.io.StringWriter
 
@@ -85,7 +88,10 @@ fun Router(
       DetailScreen(detail)
     }
     composable("/v/{episode}.html") {
-      PlayerScreen()
+      val source by viewModel.animePlayer.collectAsState()
+      if (source != null) {
+        PlayerScreen(source!!)
+      }
     }
   }
 }
@@ -213,11 +219,53 @@ fun DetailScreen(detail: AnimeDetail) {
 }
 
 @Composable
-fun PlayerScreen() {
-  val source = remember {
-    VideoPlayerSource.Network(
-      url = "https://sf3-ttcdn-tos.pstatp.com/obj/tos-cn-v-0004/45e026bf916e4da189253ef46c605426"
-    )
+fun PlayerScreen(source: VideoPlayerSource) {
+  var openDialog by remember { mutableStateOf(false) }
+
+  val player = rememberPlayer(source)
+  val controller = rememberVideoPlayerController(player)
+
+  var isPlaying by remember(source) { mutableStateOf(false) }
+
+  fun savePlayState() {
+    isPlaying = controller.isPlaying
   }
-  TvVideoPlayer(source = source)
+
+  fun restorePlayState() {
+    if (isPlaying) {
+      controller.play()
+    }
+  }
+
+  Box(
+    modifier = Modifier
+      .handleTvKey(TvControllerKey.Back) {
+        if (!openDialog) {
+          openDialog = true
+          savePlayState()
+          player.pause()
+        }
+        true
+      }
+  ) {
+    TvVideoPlayer(
+      player = player,
+      controller = controller
+    )
+
+    if (openDialog) {
+      val navController = LocalAppNavigator.current
+      TvSelectDialog(
+        text = "是否退出播放？",
+        onCenterClick = {
+          openDialog = false
+          navController.popBackStack()
+        },
+        onCancelClick = {
+          openDialog = false
+          restorePlayState()
+        },
+      )
+    }
+  }
 }

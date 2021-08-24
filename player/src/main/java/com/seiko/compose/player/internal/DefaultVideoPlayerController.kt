@@ -1,11 +1,8 @@
 package com.seiko.compose.player.internal
 
-import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.video.VideoSize
-import com.seiko.compose.player.VideoPlayerController
-import com.seiko.compose.player.VideoPlayerState
-import com.seiko.compose.player.VideoSeekDirection
+import com.seiko.compose.player.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
@@ -13,31 +10,20 @@ import kotlinx.coroutines.flow.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class DefaultVideoPlayerController(
-  private val exoPlayer: ExoPlayer,
+  private val player: Player,
   private val coroutineScope: CoroutineScope,
   initialState: VideoPlayerState,
 ) : VideoPlayerController {
 
-  private val intents = Channel<Action>(
-    onBufferOverflow = BufferOverflow.DROP_LATEST
+  private val intents = Channel<VideoPlayerAction>(
+    capacity = Channel.BUFFERED,
+    onBufferOverflow = BufferOverflow.SUSPEND
   )
 
   @OptIn(ExperimentalCoroutinesApi::class)
   private val _state = intents.receiveAsFlow()
-    .scan(initialState) { state, action ->
-      when (action) {
-        is Action.ControlsVisible -> state.copy(controlsVisible = action.isVisible)
-        is Action.Progress -> state.copy(
-          duration = action.duration,
-          currentPosition = action.currentPosition,
-          bufferedPosition = action.bufferedPosition
-        )
-        is Action.PlaybackState -> state.copy(playbackState = action.playbackState)
-        is Action.PlayState -> state.copy(isPlaying = action.isPlaying)
-        is Action.VideoSize -> state.copy(videoSize = action.videoSize)
-        is Action.SeekDirection -> state.copy(seekDirection = action.seekDirection)
-      }
-    }
+    .scan(initialState, ::stateReducer)
+    .flowOn(Dispatchers.IO)
     .stateIn(coroutineScope, SharingStarted.Lazily, initialState)
 
   override val state: StateFlow<VideoPlayerState>
@@ -45,6 +31,9 @@ internal class DefaultVideoPlayerController(
 
   val currentState: VideoPlayerState
     get() = _state.value
+
+  override val isPlaying: Boolean
+    get() = player.playWhenReady
 
   private val playerListener = object : Player.Listener {
 
@@ -66,33 +55,33 @@ internal class DefaultVideoPlayerController(
   }
 
   init {
-    exoPlayer.playWhenReady = initialState.isPlaying
-    exoPlayer.addListener(playerListener)
+    player.playWhenReady = initialState.isPlaying
+    player.addListener(playerListener)
   }
 
   override fun play() {
-    exoPlayer.playWhenReady = true
+    player.playWhenReady = true
   }
 
   override fun pause() {
-    exoPlayer.playWhenReady = false
+    player.playWhenReady = false
   }
 
   override fun playToggle() {
-    if (exoPlayer.isPlaying) pause()
+    if (player.isPlaying) pause()
     else play()
   }
 
   override fun seekRewind() {
-    val target = (exoPlayer.currentPosition - 10_000).coerceAtLeast(0)
-    exoPlayer.seekTo(target)
+    val target = (player.currentPosition - 10_000).coerceAtLeast(0)
+    player.seekTo(target)
     updateDurationAndPosition()
     updateSeekAction(VideoSeekDirection.Rewind)
   }
 
   override fun seekForward() {
-    val target = (exoPlayer.currentPosition + 10_000).coerceAtMost(exoPlayer.duration)
-    exoPlayer.seekTo(target)
+    val target = (player.currentPosition + 10_000).coerceAtMost(player.duration)
+    player.seekTo(target)
     updateDurationAndPosition()
     updateSeekAction(VideoSeekDirection.Forward)
   }
@@ -102,19 +91,19 @@ internal class DefaultVideoPlayerController(
   }
 
   override fun seekTo(positionMs: Long) {
-    exoPlayer.seekTo(positionMs)
+    player.seekTo(positionMs)
   }
 
   override fun reset() {
-    exoPlayer.stop()
+    player.stop()
   }
 
   override fun showControl() {
-    intents.trySend(Action.ControlsVisible(true))
+    intents.trySend(VideoPlayerAction.ControlsVisible(true))
   }
 
   override fun hideControl() {
-    intents.trySend(Action.ControlsVisible(false))
+    intents.trySend(VideoPlayerAction.ControlsVisible(false))
   }
 
   private var updateProgressJob: Job? = null
@@ -130,42 +119,27 @@ internal class DefaultVideoPlayerController(
 
   private fun updateDurationAndPosition() {
     intents.trySend(
-      Action.Progress(
-        duration = exoPlayer.duration.coerceAtLeast(0L),
-        currentPosition = exoPlayer.currentPosition.coerceAtLeast(0L),
-        bufferedPosition = exoPlayer.bufferedPosition.coerceAtLeast(0L),
+      VideoPlayerAction.Progress(
+        duration = player.duration.coerceAtLeast(0L),
+        currentPosition = player.currentPosition.coerceAtLeast(0L),
+        bufferedPosition = player.bufferedPosition.coerceAtLeast(0L),
       )
     )
   }
 
   private fun updatePlaybackState(playbackState: Int) {
-    intents.trySend(Action.PlaybackState(playbackState))
+    intents.trySend(VideoPlayerAction.PlaybackState(playbackState))
   }
 
   private fun updatePlayState(playWhenReady: Boolean) {
-    intents.trySend(Action.PlayState(playWhenReady))
+    intents.trySend(VideoPlayerAction.PlayState(playWhenReady))
   }
 
   private fun updateVideoSize(width: Int, height: Int) {
-    intents.trySend(Action.VideoSize(width to height))
+    intents.trySend(VideoPlayerAction.VideoSize(width to height))
   }
 
   private fun updateSeekAction(seekAction: VideoSeekDirection) {
-    intents.trySend(Action.SeekDirection(seekAction))
-  }
-
-  private sealed class Action {
-
-    data class Progress(
-      val duration: Long,
-      val currentPosition: Long,
-      val bufferedPosition: Long,
-    ) : Action()
-
-    data class ControlsVisible(val isVisible: Boolean) : Action()
-    data class PlaybackState(val playbackState: Int) : Action()
-    data class PlayState(val isPlaying: Boolean) : Action()
-    data class VideoSize(val videoSize: Pair<Int, Int>) : Action()
-    data class SeekDirection(val seekDirection: VideoSeekDirection) : Action()
+    intents.trySend(VideoPlayerAction.SeekDirection(seekAction))
   }
 }

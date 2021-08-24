@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.seiko.compose.focuskit.demo.model.Anime
 import com.seiko.compose.focuskit.demo.model.AnimeDetail
 import com.seiko.compose.focuskit.demo.model.AnimeEpisode
+import com.seiko.compose.player.VideoPlayerSource
 import kotlinx.coroutines.flow.*
 
 typealias AnimeGroup = List<Pair<String, List<Anime>>>
@@ -165,5 +166,17 @@ class MainViewModel : ViewModel() {
     scope = viewModelScope,
     started = SharingStarted.Lazily,
     initialValue = AnimeDetail()
+  )
+
+  val animePlayer = flow {
+    emit(
+      VideoPlayerSource.Network(
+        url = "https://sf1-ttcdn-tos.pstatp.com/obj/tos-cn-v-0004/fa7faefcdfd14caa9bd4e9d998828c27"
+      )
+    )
+  }.stateIn(
+    scope = viewModelScope,
+    started = SharingStarted.Lazily,
+    initialValue = null
   )
 }

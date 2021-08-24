@@ -35,7 +35,7 @@ fun TvSelectDialog(
   val focusRequester = remember { FocusRequester() }
 
   AlertDialog(
-    onDismissRequest = { /* nothing to do */ },
+    onDismissRequest = { onCancelClick() },
     title = {
       Text(text = title)
     },

@@ -17,7 +17,7 @@ sealed class VideoPlayerSource {
   ) : VideoPlayerSource()
 }
 
-internal fun VideoPlayerSource.toMediaItem(): MediaItem {
+fun VideoPlayerSource.toMediaItem(): MediaItem {
   return when (this) {
     is VideoPlayerSource.Network -> {
       MediaItem.fromUri(Uri.parse(url))

@@ -7,7 +7,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class VideoPlayerState constructor(
   val isPlaying: Boolean = true,
-  val controlsVisible: Boolean = true,
+  val controlsVisible: Boolean = false,
   val controlsEnabled: Boolean = true,
   val duration: Long = 1L,
   val currentPosition: Long = 1L,

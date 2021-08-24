@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface VideoPlayerController {
   val state: StateFlow<VideoPlayerState>
+  val isPlaying: Boolean
   fun play()
   fun pause()
   fun playToggle()

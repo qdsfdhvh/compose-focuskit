@@ -46,3 +46,5 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
         ]
     }
 }
+
+apply from: rootProject.file('gradle/bintray.gradle')

@@ -82,7 +82,7 @@ class MainViewModel : ViewModel() {
       )
     )
   }.map { animes ->
-    List(5) { "今日更新" to animes + animes }
+    List(10) { "今日更新${it}" to (animes + animes) }
   }.stateIn(
     scope = viewModelScope,
     started = SharingStarted.Lazily,

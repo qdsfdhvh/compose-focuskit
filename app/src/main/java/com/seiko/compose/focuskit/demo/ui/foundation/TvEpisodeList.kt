@@ -2,7 +2,9 @@ package com.seiko.compose.focuskit.demo.ui.foundation
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -15,57 +17,60 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.seiko.compose.focuskit.*
+import com.seiko.compose.focuskit.TvLazyRow
+import com.seiko.compose.focuskit.collectFocusIndexAsState
 import com.seiko.compose.focuskit.demo.LocalAppNavigator
 import com.seiko.compose.focuskit.demo.model.AnimeEpisode
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 import com.seiko.compose.focuskit.demo.ui.theme.backgroundColor
+import com.seiko.compose.focuskit.focusClick
+import com.seiko.compose.focuskit.rememberFocusRequesters
 
 @Composable
 fun TvEpisodeList(
   title: String,
   list: List<AnimeEpisode>,
-  parent: ContainerTvFocusItem? = null
+  modifier: Modifier = Modifier,
 ) {
   val navController = LocalAppNavigator.current
-  val container = parent ?: rememberContainerTvFocusItem()
+
+  val focusRequesters = rememberFocusRequesters(list)
+  val interactionSource = remember { MutableInteractionSource() }
+  val focusIndex by interactionSource.collectFocusIndexAsState()
+  var isParentFocused by remember { mutableStateOf(false) }
 
   Column {
     Text(
       text = title,
       style = MaterialTheme.typography.h6,
-      modifier = Modifier
-        .padding(start = 15.dp, top = 10.dp),
+      modifier = Modifier.padding(start = 15.dp, top = 10.dp),
     )
-    TvLazyRow(container) {
-      itemsIndexed(list) { index, item ->
-        val focusItem = rememberTvFocusItem(
-          key = title + index,
-          container = container,
-          index = index
-        )
 
-        var isFocused by remember { mutableStateOf(false) }
+    TvLazyRow(
+      modifier = modifier.onFocusChanged { isParentFocused = it.hasFocus || it.isFocused },
+      interactionSource = interactionSource,
+    ) {
+      itemsIndexed(list) { index, item ->
+        val itemInteractionSource = remember { MutableInteractionSource() }
         EpisodeItem(
           modifier = Modifier
-            .clickable {
-              navController.navigate(item.actionUrl)
-            }
-            .handleTvKey(TvControllerKey.Enter) {
-              navController.navigate(item.actionUrl)
-              true
-            }
-            .onFocusChanged {
-              isFocused = it.isFocused
-            }
-            .tvFocusTarget(focusItem),
+            .focusClick { navController.navigate(item.actionUrl) }
+            .focusRequester(focusRequesters[index])
+            .focusable(interactionSource = itemInteractionSource),
           episode = item,
-          isFocused = isFocused,
+          isFocused = itemInteractionSource.collectIsFocusedAsState().value,
         )
       }
+    }
+  }
+
+  LaunchedEffect(focusIndex, isParentFocused) {
+    if (isParentFocused) {
+      focusRequesters.getOrNull(focusIndex)?.requestFocus()
     }
   }
 }

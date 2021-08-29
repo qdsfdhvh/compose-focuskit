@@ -1,12 +1,11 @@
 package com.seiko.compose.focuskit.demo
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -14,8 +13,12 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.*
+import androidx.navigation.compose.ComposeNavigator
+import androidx.navigation.compose.DialogNavigator
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import com.seiko.compose.focuskit.*
 import com.seiko.compose.focuskit.demo.model.AnimeDetail
 import com.seiko.compose.focuskit.demo.ui.foundation.*
@@ -24,8 +27,6 @@ import com.seiko.compose.player.TvVideoPlayer
 import com.seiko.compose.player.VideoPlayerSource
 import com.seiko.compose.player.rememberPlayer
 import com.seiko.compose.player.rememberVideoPlayerController
-import java.io.PrintWriter
-import java.io.StringWriter
 
 class MainActivity : ComponentActivity() {
 
@@ -88,118 +89,80 @@ fun HomeScreen(
   tabList: List<String> = emptyList(),
   animeGroup: AnimeGroup = emptyList(),
 ) {
-  val navController = LocalAppNavigator.current
-  val rootFocusItem = rememberRootTvFocusItem()
+  val size = remember(animeGroup) { 1 + animeGroup.size }
+  val focusRequesters = rememberFocusRequesters(size)
+  val interactionSource = remember { MutableInteractionSource() }
+  val focusIndex by interactionSource.collectFocusIndexAsState()
 
   TvLazyColumn(
-    container = rootFocusItem,
-    modifier = Modifier
-      .handleTvKey(TvControllerKey.Back) {
-        navController.popBackStack()
-      }
+    modifier = Modifier,
+    interactionSource = interactionSource
   ) {
     item {
-      val tabContainer = rememberContainerTvFocusItem(
-        key = Unit,
-        container = rootFocusItem,
-        index = 0
-      )
-
       TvTabBar(
-        parent = tabContainer,
-        tabList = tabList,
+        tabList,
+        modifier = Modifier.focusRequester(focusRequesters[0])
       )
     }
     itemsIndexed(animeGroup) { index, pair ->
-      val groupContainer = rememberContainerTvFocusItem(
-        key = pair,
-        container = rootFocusItem,
-        index = index + 1
-      )
-
       val (title, animes) = pair
       TvTitleGroup(
-        parent = groupContainer,
-        title = title,
-        list = animes,
+        title, animes,
+        modifier = Modifier.focusRequester(focusRequesters[index + 1])
       )
     }
   }
 
-  LaunchedEffect(tabList) {
-    Log.d("Demo", "HomeScreen onActive1")
-    rootFocusItem.refocus(true)
-  }
-
-  DisposableEffect(Unit) {
-    Log.d("Demo", "HomeScreen onActive2")
-    onDispose {
-      Log.d("Demo", "HomeScreen onDispose")
-    }
+  LaunchedEffect(focusIndex, tabList, animeGroup) {
+    focusRequesters.getOrNull(focusIndex)?.requestFocus()
   }
 }
 
 @Composable
 fun DetailScreen(detail: AnimeDetail) {
   val navController = LocalAppNavigator.current
-  val rootFocusItem = rememberRootTvFocusItem()
+  val focusRequesters = rememberFocusRequesters(3)
+  val interactionSource = remember(detail) { MutableInteractionSource() }
+  val focusIndex by interactionSource.collectFocusIndexAsState()
 
   TvLazyColumn(
-    container = rootFocusItem,
     modifier = Modifier
-      .handleTvKey(TvControllerKey.Back) {
+      .handleTvKey(TvKeyEvent.Back) {
         navController.popBackStack()
-      }
+      },
+    interactionSource = interactionSource,
   ) {
     item {
-      val infoContainer = rememberContainerTvFocusItem(
-        key = Unit,
-        container = rootFocusItem,
-        index = 0
-      )
-
       TvMovieInfo(
+        modifier = Modifier.focusRequester(focusRequesters[0]),
         title = detail.title,
         cover = detail.cover,
         releaseTime = detail.releaseTime,
         state = detail.state,
         tags = detail.tags,
         description = detail.description,
-        focusParent = infoContainer,
       )
     }
 
     item {
-      val episodeContainer = rememberContainerTvFocusItem(
-        key = Unit,
-        container = rootFocusItem,
-        index = 1
-      )
-
       TvEpisodeList(
+        modifier = Modifier.focusRequester(focusRequesters[1]),
         title = "播放列表",
         list = detail.episodeList,
-        parent = episodeContainer,
       )
     }
 
     item {
-      val relatedContainer = rememberContainerTvFocusItem(
-        key = Unit,
-        container = rootFocusItem,
-        index = 2
-      )
-
       TvTitleGroup(
-        parent = relatedContainer,
+        modifier = Modifier.focusRequester(focusRequesters[2]),
         title = "相关推荐",
         list = detail.relatedList
       )
     }
   }
 
-  LaunchedEffect(detail) {
-    rootFocusItem.refocus(true)
+  LaunchedEffect(focusIndex) {
+    focusRequesters.getOrNull(focusIndex)?.requestFocus()
   }
 }
 
@@ -224,7 +187,7 @@ fun PlayerScreen(source: VideoPlayerSource) {
 
   Box(
     modifier = Modifier
-      .handleTvKey(TvControllerKey.Back) {
+      .handleTvKey(TvKeyEvent.Back) {
         if (!openDialog) {
           openDialog = true
           savePlayState()

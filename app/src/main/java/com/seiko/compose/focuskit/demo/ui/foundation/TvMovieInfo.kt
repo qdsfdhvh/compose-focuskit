@@ -1,24 +1,37 @@
 package com.seiko.compose.focuskit.demo.ui.foundation
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import com.seiko.compose.focuskit.ContainerTvFocusItem
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
-import com.seiko.compose.focuskit.rememberContainerTvFocusItem
-import com.seiko.compose.focuskit.tvFocusTarget
+import com.seiko.compose.focuskit.demo.util.ToastUtils
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun TvMovieInfo(
   modifier: Modifier = Modifier,
@@ -28,19 +41,24 @@ fun TvMovieInfo(
   state: String = "",
   tags: List<String> = emptyList(),
   description: String = "",
-  focusParent: ContainerTvFocusItem? = null,
 ) {
-  val container = focusParent ?: rememberContainerTvFocusItem()
+  val context = LocalContext.current
+
+  val interactionSource = remember { MutableInteractionSource() }
+  val isFocused by interactionSource.collectIsFocusedAsState()
+
+  val (btnStarFocusRequester) = FocusRequester.createRefs()
 
   ConstraintLayout(
     modifier = modifier
+      .focusable(interactionSource = interactionSource)
       .fillMaxSize()
-      .tvFocusTarget(container)
   ) {
     val (
       titleRef, coverRef,
       rowRef,
-      descriptionRef
+      descriptionRef,
+      btnStarPref,
     ) = createRefs()
 
     NetworkImage(
@@ -58,6 +76,7 @@ fun TvMovieInfo(
         .constrainAs(titleRef) {
           top.linkTo(parent.top, 20.dp)
           start.linkTo(parent.start, 20.dp)
+          // end.linkTo(coverRef.start, 20.dp)
         },
       text = title,
       style = MaterialTheme.typography.h3,
@@ -105,16 +124,50 @@ fun TvMovieInfo(
           top.linkTo(rowRef.bottom, 20.dp)
           start.linkTo(titleRef.start)
           end.linkTo(coverRef.start, 50.dp)
+          bottom.linkTo(btnStarPref.top, 20.dp)
           width = Dimension.fillToConstraints
+          height = Dimension.fillToConstraints
         },
       text = description,
       style = MaterialTheme.typography.subtitle1,
-      maxLines = 9,
+      maxLines = 5,
     )
+
+    FocusableButton(
+      modifier = Modifier
+        .constrainAs(btnStarPref) {
+          start.linkTo(titleRef.start, 20.dp)
+          bottom.linkTo(parent.bottom, 0.dp)
+        }
+        .focusRequester(btnStarFocusRequester),
+      onClick = { ToastUtils.showToast(context, "收藏") }
+    ) {
+      val imagePainter = rememberVectorPainter(image = Icons.Filled.Star)
+      Icon(imagePainter, contentDescription = null)
+    }
+  }
+
+  LaunchedEffect(title, isFocused) {
+    if (isFocused) {
+      btnStarFocusRequester.requestFocus()
+    }
   }
 }
 
-@Preview(widthDp = 1280, heightDp = 720)
+// @Composable
+// fun TvMovieInfo(
+//   modifier: Modifier = Modifier,
+//   title: String = "",
+//   cover: String = "",
+//   releaseTime: String = "",
+//   state: String = "",
+//   tags: List<String> = emptyList(),
+//   description: String = "",
+// ){
+//
+// }
+
+@Preview(widthDp = 1280, heightDp = 300)
 @Composable
 private fun TvMovieInfoPreview() {
   AnimeTvTheme {

@@ -3,73 +3,73 @@ package com.seiko.compose.focuskit.demo.ui.foundation
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.seiko.compose.focuskit.*
+import com.seiko.compose.focuskit.TvLazyRow
+import com.seiko.compose.focuskit.collectFocusIndexAsState
 import com.seiko.compose.focuskit.demo.LocalAppNavigator
 import com.seiko.compose.focuskit.demo.model.Anime
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 import com.seiko.compose.focuskit.demo.ui.theme.backgroundColor
+import com.seiko.compose.focuskit.focusClick
+import com.seiko.compose.focuskit.rememberFocusRequesters
 
 @Composable
 fun TvTitleGroup(
   title: String,
   list: List<Anime>,
   modifier: Modifier = Modifier,
-  parent: ContainerTvFocusItem? = null
 ) {
-  val container = parent ?: rememberContainerTvFocusItem()
-
   val navController = LocalAppNavigator.current
 
-  Column(modifier = modifier) {
+  val focusRequesters = rememberFocusRequesters(list)
+  val interactionSource = remember { MutableInteractionSource() }
+  val focusIndex by interactionSource.collectFocusIndexAsState()
+  var isParentFocused by remember { mutableStateOf(false) }
+
+  Column {
     Text(
       text = title,
       style = MaterialTheme.typography.h6,
       modifier = Modifier.padding(start = 15.dp, top = 10.dp),
     )
-    TvLazyRow(container) {
+    TvLazyRow(
+      modifier = modifier.onFocusChanged { isParentFocused = it.hasFocus || it.isFocused },
+      interactionSource = interactionSource,
+    ) {
       itemsIndexed(list) { index, item ->
-        val focusItem = rememberTvFocusItem(
-          key = item,
-          container = container,
-          index = index
-        )
-        var isFocused by remember { mutableStateOf(false) }
+        val itemInteractionSource = remember { MutableInteractionSource() }
         GroupItem(
           modifier = Modifier
-            .clickable {
-              navController.navigate(item.actionUrl)
-            }
-            .handleTvKey(TvControllerKey.Enter) {
-              navController.navigate(item.actionUrl)
-              true
-            }
-            .onFocusChanged {
-              isFocused = it.isFocused
-            }
-            .tvFocusTarget(focusItem),
+            .focusClick { navController.navigate(item.actionUrl) }
+            .focusRequester(focusRequesters[index])
+            .focusable(interactionSource = itemInteractionSource),
           item = item,
-          isFocused = isFocused,
+          isFocused = itemInteractionSource.collectIsFocusedAsState().value,
         )
+      }
+    }
+
+    LaunchedEffect(focusIndex, isParentFocused) {
+      if (isParentFocused) {
+        focusRequesters.getOrNull(focusIndex)?.requestFocus()
       }
     }
   }
@@ -95,6 +95,7 @@ private fun GroupItem(
       data = item.imageUrl,
       modifier = Modifier.fillMaxSize()
     )
+
     Text(
       text = item.title,
       color = Color.White,

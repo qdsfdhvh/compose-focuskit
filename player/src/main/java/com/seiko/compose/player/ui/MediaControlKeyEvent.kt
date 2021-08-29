@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import com.seiko.compose.focuskit.TvControllerKey
+import com.seiko.compose.focuskit.TvKeyEvent
 import com.seiko.compose.focuskit.onTvKeyEvent
 import com.seiko.compose.player.LocalVideoPlayerController
 import com.seiko.compose.player.VideoSeekDirection
@@ -26,7 +26,7 @@ fun MediaControlKeyEvent(modifier: Modifier = Modifier) {
     modifier = modifier
       .onTvKeyEvent {
         when (it) {
-          TvControllerKey.Enter -> {
+          TvKeyEvent.Enter -> {
             if (state.isPlaying) {
               controller.pause()
               controller.showControl()
@@ -36,7 +36,7 @@ fun MediaControlKeyEvent(modifier: Modifier = Modifier) {
             }
             true
           }
-          TvControllerKey.Down -> {
+          TvKeyEvent.Down -> {
             if (state.controlsVisible) {
               controller.hideControl()
             } else {
@@ -44,15 +44,15 @@ fun MediaControlKeyEvent(modifier: Modifier = Modifier) {
             }
             true
           }
-          TvControllerKey.Left -> {
+          TvKeyEvent.Left -> {
             controller.seekRewind()
             true
           }
-          TvControllerKey.Right -> {
+          TvKeyEvent.Right -> {
             controller.seekForward()
             true
           }
-          TvControllerKey.Back -> {
+          TvKeyEvent.Back -> {
             if (state.controlsVisible) {
               controller.hideControl()
               true

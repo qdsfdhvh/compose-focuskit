@@ -1,11 +1,13 @@
 package com.seiko.compose.player
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import com.google.android.exoplayer2.Player
 import com.seiko.compose.player.internal.DefaultVideoPlayerController
@@ -79,8 +81,8 @@ fun TvVideoPlayer(
   CompositionLocalProvider(
     LocalVideoPlayerController provides controller
   ) {
-    Box(modifier = modifier) {
-      MediaPlayerLayout(player)
+    Box(modifier = modifier.background(Color.Black)) {
+      MediaPlayerLayout(player, modifier = Modifier.matchParentSize())
       MediaControlLayout(modifier = Modifier.matchParentSize())
       MediaControlKeyEvent(modifier = Modifier.matchParentSize())
     }

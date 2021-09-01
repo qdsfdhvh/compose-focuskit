@@ -171,7 +171,7 @@ class MainViewModel : ViewModel() {
   val animePlayer = flow {
     emit(
       VideoPlayerSource.Network(
-        url = "https://sf1-ttcdn-tos.pstatp.com/obj/tos-cn-v-0004/fa7faefcdfd14caa9bd4e9d998828c27"
+        url = "https://v11.tkzyapi.com/20210827/90uHeEUi/index.m3u8"
       )
     )
   }.stateIn(

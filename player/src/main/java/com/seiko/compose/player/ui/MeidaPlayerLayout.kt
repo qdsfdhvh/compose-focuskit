@@ -14,13 +14,13 @@ import com.google.android.exoplayer2.ui.PlayerView
 import com.seiko.compose.player.LocalVideoPlayerController
 
 @Composable
-fun MediaPlayerLayout(player: Player) {
+fun MediaPlayerLayout(player: Player, modifier: Modifier = Modifier) {
   val controller = LocalVideoPlayerController.current
   val state by controller.state.collectAsState()
 
   val lifecycle = LocalLifecycleOwner.current.lifecycle
 
-  PlayerSurface { playerView ->
+  PlayerSurface(modifier) { playerView ->
     playerView.player = player
 
     lifecycle.addObserver(object : LifecycleObserver {

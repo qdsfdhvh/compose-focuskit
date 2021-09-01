@@ -198,7 +198,8 @@ fun PlayerScreen(source: VideoPlayerSource) {
   ) {
     TvVideoPlayer(
       player = player,
-      controller = controller
+      controller = controller,
+      modifier = Modifier.fillMaxSize()
     )
 
     if (openDialog) {

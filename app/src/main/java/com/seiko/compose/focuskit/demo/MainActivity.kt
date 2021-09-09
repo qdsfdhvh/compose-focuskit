@@ -5,10 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.*
@@ -89,14 +91,18 @@ fun HomeScreen(
   tabList: List<String> = emptyList(),
   animeGroup: AnimeGroup = emptyList(),
 ) {
+
   val size = remember(animeGroup) { 1 + animeGroup.size }
   val focusRequesters = rememberFocusRequesters(size)
-  val interactionSource = remember { MutableInteractionSource() }
-  val focusIndex by interactionSource.collectFocusIndexAsState()
 
-  TvLazyColumn(
-    modifier = Modifier,
-    interactionSource = interactionSource
+  val state = rememberLazyListState()
+  val focusIndex by state.interactionSource.collectFocusIndexAsState()
+
+  LazyColumn(
+    state = state,
+    modifier = Modifier
+      .focusScrollVertical(state)
+      .focusable(),
   ) {
     item {
       TvTabBar(
@@ -122,15 +128,18 @@ fun HomeScreen(
 fun DetailScreen(detail: AnimeDetail) {
   val navController = LocalAppNavigator.current
   val focusRequesters = rememberFocusRequesters(3)
-  val interactionSource = remember(detail) { MutableInteractionSource() }
-  val focusIndex by interactionSource.collectFocusIndexAsState()
 
-  TvLazyColumn(
+  val state = rememberLazyListState()
+  val focusIndex by state.interactionSource.collectFocusIndexAsState()
+
+  LazyColumn(
+    state = state,
     modifier = Modifier
       .handleTvKey(TvKeyEvent.Back) {
         navController.popBackStack()
-      },
-    interactionSource = interactionSource,
+      }
+      .focusScrollVertical(state)
+      .focusable(),
   ) {
     item {
       TvMovieInfo(

@@ -18,20 +18,39 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.platform.LocalDensity
 import kotlinx.coroutines.launch
 
+fun Modifier.focusScrollHorizontal(
+  state: LazyListState,
+) = focusScroll(
+  state = state,
+  nextFocusBehaviour = NextFocusBehaviour.Horizontal,
+  scrollBehaviour = ScrollBehaviour.Horizontal,
+)
+
+fun Modifier.focusScrollVertical(
+  state: LazyListState,
+) = focusScroll(
+  state = state,
+  nextFocusBehaviour = NextFocusBehaviour.Vertical,
+  scrollBehaviour = ScrollBehaviour.Vertical,
+)
+
 @SuppressLint("UnnecessaryComposedModifier")
-fun Modifier.onFocusScroll(
+fun Modifier.focusScroll(
   state: LazyListState,
   nextFocusBehaviour: NextFocusBehaviour,
   scrollBehaviour: ScrollBehaviour,
-  interactionSource: MutableInteractionSource? = null,
 ) = composed {
   val density = LocalDensity.current
   val scope = rememberCoroutineScope()
   var focusIndexInteraction by rememberFocusIndexInteraction(state)
 
+  suspend fun send(interaction: Interaction) {
+    state.mutableInteractionSource.emit(interaction)
+  }
+
   DisposableEffect(state) {
     scope.launch {
-      interactionSource?.emit(focusIndexInteraction)
+      send(focusIndexInteraction)
     }
     onDispose { }
   }
@@ -50,7 +69,7 @@ fun Modifier.onFocusScroll(
 
       scope.launch {
         val interaction = FocusIndexInteraction(nextFocusIndex)
-        interactionSource?.emit(interaction)
+        send(interaction)
         focusIndexInteraction = interaction
 
         scrollBehaviour.onScroll(state, foundItem, density)
@@ -71,4 +90,5 @@ fun rememberFocusIndexInteraction(key: Any? = null): MutableState<FocusIndexInte
   }
 }
 
-private const val SCROLL_ANIMATION_DURATION = 150
+private val LazyListState.mutableInteractionSource: MutableInteractionSource
+  get() = interactionSource as MutableInteractionSource

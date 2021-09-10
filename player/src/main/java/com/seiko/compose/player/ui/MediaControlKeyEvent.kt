@@ -5,7 +5,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -83,7 +87,6 @@ fun VideoSeekAnimation(
   Box(modifier = modifier) {
     when (seekDirection) {
       VideoSeekDirection.NONE -> {
-
       }
       VideoSeekDirection.Forward -> {
         ShadowedIcon(

@@ -2,11 +2,26 @@ package com.seiko.compose.player.internal
 
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.video.VideoSize
-import com.seiko.compose.player.*
-import kotlinx.coroutines.*
+import com.seiko.compose.player.VideoPlayerAction
+import com.seiko.compose.player.VideoPlayerController
+import com.seiko.compose.player.VideoPlayerState
+import com.seiko.compose.player.VideoSeekDirection
+import com.seiko.compose.player.stateReducer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.scan
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class DefaultVideoPlayerController(

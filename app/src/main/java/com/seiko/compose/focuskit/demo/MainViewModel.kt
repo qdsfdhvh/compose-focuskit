@@ -6,7 +6,12 @@ import com.seiko.compose.focuskit.demo.model.Anime
 import com.seiko.compose.focuskit.demo.model.AnimeDetail
 import com.seiko.compose.focuskit.demo.model.AnimeEpisode
 import com.seiko.compose.player.VideoPlayerSource
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 typealias AnimeGroup = List<Pair<String, List<Anime>>>
 
@@ -82,7 +87,7 @@ class MainViewModel : ViewModel() {
       )
     )
   }.map { animes ->
-    List(10) { "今日更新${it}" to (animes + animes) }
+    List(10) { "今日更新$it" to (animes + animes) }
   }.stateIn(
     scope = viewModelScope,
     started = SharingStarted.Lazily,

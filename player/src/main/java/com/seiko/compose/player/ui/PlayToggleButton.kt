@@ -1,6 +1,10 @@
 package com.seiko.compose.player.ui
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -43,12 +47,10 @@ fun PlayToggleButton(
         CircularProgressIndicator()
       }
       Player.STATE_IDLE -> {
-
       }
     }
   }
 }
-
 
 @Composable
 fun ShadowedIcon(

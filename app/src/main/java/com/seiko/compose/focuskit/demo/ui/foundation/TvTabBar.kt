@@ -14,7 +14,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
@@ -39,7 +44,6 @@ fun TvTabBar(
   val state = rememberLazyListState()
   val focusIndex by state.interactionSource.collectFocusIndexAsState()
   var isParentFocused by remember { mutableStateOf(false) }
-
 
   LazyRow(
     state = state,

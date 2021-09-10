@@ -17,7 +17,6 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
     }
-
 }
 rootProject.name = "compose-focuskit"
 include ':app'

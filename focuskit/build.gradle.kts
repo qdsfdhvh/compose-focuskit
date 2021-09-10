@@ -44,15 +44,9 @@ android {
 }
 
 dependencies {
-    api(project(":focuskit"))
-    api("androidx.compose.material:material:$composeVersion")
-    api("androidx.compose.material:material-icons-extended:$composeVersion")
-    api("com.google.android.exoplayer:exoplayer:2.15.0")
-
-    // compose preview
-    implementation("androidx.compose.ui:ui-tooling:$composeVersion")
-    implementation("androidx.compose.ui:ui-tooling-preview:$composeVersion")
-    implementation("androidx.activity:activity-compose:$activityComposeVersion")
+    api("androidx.compose.ui:ui:$composeVersion")
+    api("androidx.compose.runtime:runtime:$composeVersion")
+    api("androidx.compose.foundation:foundation:$composeVersion")
 }
 
 if (isUploadBintray) {

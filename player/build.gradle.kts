@@ -13,6 +13,7 @@ val androidTargetCompatibility: JavaVersion by rootProject.extra
 val jvmTargetVersion: String by rootProject.extra
 val composeVersion: String by rootProject.extra
 val activityComposeVersion: String by rootProject.extra
+val isUploadBintray: Boolean by rootProject.extra
 
 android {
     compileSdk = androidCompileSdkVersion
@@ -54,4 +55,6 @@ dependencies {
     implementation("androidx.activity:activity-compose:$activityComposeVersion")
 }
 
-apply(from = rootProject.file("gradle/bintray.gradle"))
+if (isUploadBintray) {
+    apply(from = rootProject.file("gradle/bintray.gradle"))
+}

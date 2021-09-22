@@ -60,7 +60,7 @@ dependencies {
   implementation("io.coil-kt:coil-compose:1.3.2")
 
   implementation(project(":focuskit"))
-  implementation(project(":player"))
+  implementation(project(":focuskit-player"))
 
   testImplementation("junit:junit:4.13.2")
   androidTestImplementation("androidx.test.ext:junit:1.1.3")

@@ -49,6 +49,10 @@ dependencies {
   api("androidx.compose.material:material-icons-extended:$composeVersion")
   api("com.google.android.exoplayer:exoplayer:2.15.0")
 
+  // vlc
+  val libVlcVersion = "3.4.0"
+  implementation("org.videolan.android:libvlc-all:$libVlcVersion")
+
   // compose preview
   implementation("androidx.compose.ui:ui-tooling:$composeVersion")
   implementation("androidx.compose.ui:ui-tooling-preview:$composeVersion")

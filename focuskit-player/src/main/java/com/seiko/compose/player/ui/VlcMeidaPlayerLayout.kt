@@ -13,22 +13,23 @@ import androidx.lifecycle.OnLifecycleEvent
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import com.seiko.compose.player.LocalVideoPlayerController
+import org.videolan.libvlc.MediaPlayer
+import org.videolan.libvlc.util.VLCVideoLayout
 
 @Composable
-fun MediaPlayerLayout(player: Player, modifier: Modifier = Modifier) {
+fun VlcMediaPlayerLayout(mediaPlayer: MediaPlayer, modifier: Modifier = Modifier) {
   val controller = LocalVideoPlayerController.current
   val state by controller.state.collectAsState()
 
   val lifecycle = LocalLifecycleOwner.current.lifecycle
 
-  PlayerSurface(modifier) { playerView ->
-    playerView.player = player
+  VlcPlayerSurface(modifier) { videoLayout ->
+    mediaPlayer.attachViews(videoLayout, null, true, true)
 
     lifecycle.addObserver(object : LifecycleObserver {
       @OnLifecycleEvent(Lifecycle.Event.ON_START)
       fun onStart() {
-        playerView.keepScreenOn = true
-        playerView.onResume()
+        videoLayout.keepScreenOn = true
         if (state.isPlaying) {
           controller.play()
         }
@@ -36,8 +37,7 @@ fun MediaPlayerLayout(player: Player, modifier: Modifier = Modifier) {
 
       @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
       fun onStop() {
-        playerView.keepScreenOn = false
-        playerView.onPause()
+        videoLayout.keepScreenOn = false
         controller.pause()
       }
     })
@@ -45,24 +45,23 @@ fun MediaPlayerLayout(player: Player, modifier: Modifier = Modifier) {
 
   DisposableEffect(Unit) {
     onDispose {
-      player.release()
+      mediaPlayer.detachViews()
+      mediaPlayer.release()
     }
   }
 }
 
 @Composable
-fun PlayerSurface(
+fun VlcPlayerSurface(
   modifier: Modifier = Modifier,
-  onPlayerViewAvailable: (PlayerView) -> Unit = {}
+  onPlayerViewAvailable: (VLCVideoLayout) -> Unit = {}
 ) {
   AndroidView(
     modifier = modifier,
     factory = { context ->
-      PlayerView(context).apply {
-        useController = false
-      }
+      VLCVideoLayout(context)
     }
-  ) { playerView ->
-    onPlayerViewAvailable(playerView)
+  ) { videoLayout ->
+    onPlayerViewAvailable(videoLayout)
   }
 }

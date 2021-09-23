@@ -1,29 +1,23 @@
 package com.seiko.compose.player.internal
 
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.video.VideoSize
 import com.seiko.compose.player.VideoPlayerAction
 import com.seiko.compose.player.VideoPlayerController
 import com.seiko.compose.player.VideoPlayerState
 import com.seiko.compose.player.VideoSeekDirection
 import com.seiko.compose.player.stateReducer
-import kotlin.math.abs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import org.videolan.libvlc.MediaPlayer
+import kotlin.math.abs
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class DefaultVlcVideoPlayerController(
@@ -53,7 +47,6 @@ internal class DefaultVlcVideoPlayerController(
     get() = player.isPlaying
 
   private var lastTime = 0L
-  // private var lastPosition = 0F
 
   private val eventListener = MediaPlayer.EventListener { event ->
     if (event == null) return@EventListener
@@ -69,29 +62,21 @@ internal class DefaultVlcVideoPlayerController(
         updateProgress(newLength = event.lengthChanged)
       }
       MediaPlayer.Event.PositionChanged -> {
-        // lastPosition = event.positionChanged
+
+      }
+      MediaPlayer.Event.Buffering -> {
+
+      }
+      MediaPlayer.Event.Playing -> {
+        updatePlayState(true)
+      }
+      MediaPlayer.Event.Paused -> {
+        updatePlayState(false)
       }
     }
   }
 
-  //override fun onPlaybackStateChanged(playbackState: Int) {
-  //       if (playbackState == Player.STATE_READY) {
-  //         seekFinish()
-  //         updateProgress()
-  //       }
-  //       updatePlaybackState(playbackState)
-  //     }
-  //
-  //     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-  //       updatePlayState(playWhenReady)
-  //     }
-  //
-  //     override fun onVideoSizeChanged(videoSize: VideoSize) {
-  //       updateVideoSize(videoSize.width, videoSize.height)
-  //     }
-
   init {
-    // player.playWhenReady = initialState.isPlaying
     player.setEventListener(eventListener)
   }
 
@@ -109,18 +94,14 @@ internal class DefaultVlcVideoPlayerController(
   }
 
   override fun seekRewind() {
-    val target = (player.currentPosition - 10_000).coerceAtLeast(0)
-    // player.seekTo(target)
-    player.position = target
-    updateDurationAndPosition()
+    val target = (player.time - 10_000).coerceAtLeast(0)
+    player.time = target
     updateSeekAction(VideoSeekDirection.Rewind)
   }
 
   override fun seekForward() {
-    val target = (player.currentPosition + 10_000).coerceAtMost(player.duration)
-    // player.seekTo(target)
-    player.position = target
-    updateDurationAndPosition()
+    val target = (player.time + 10_000).coerceAtMost(player.length)
+    player.time = target
     updateSeekAction(VideoSeekDirection.Forward)
   }
 
@@ -129,8 +110,7 @@ internal class DefaultVlcVideoPlayerController(
   }
 
   override fun seekTo(positionMs: Long) {
-    // player.seekTo(positionMs)
-    player.position = positionMs.toFloat()
+    player.time = positionMs
   }
 
   override fun reset() {
@@ -146,24 +126,15 @@ internal class DefaultVlcVideoPlayerController(
     intents.trySend(VideoPlayerAction.ControlsVisible(false))
   }
 
-  // private var updateProgressJob: Job? = null
-  private fun updateProgress(newTime: Long = currentState.currentPosition, newLength: Long = currentState.duration) {
-    // updateProgressJob?.cancel()
-    // updateProgressJob = coroutineScope.launch {
-    //   while (isActive) {
-    //     updateDurationAndPosition()
-    //     delay(250)
-    //   }
-    // }
-
-  }
-
-  private fun updateDurationAndPosition() {
+  private fun updateProgress(
+    newTime: Long = currentState.currentPosition,
+    newLength: Long = currentState.duration
+  ) {
     intents.trySend(
       VideoPlayerAction.Progress(
-        duration = player.duration.coerceAtLeast(0L),
-        currentPosition = player.currentPosition.coerceAtLeast(0L),
-        bufferedPosition = player.bufferedPosition.coerceAtLeast(0L),
+        duration = newLength,
+        currentPosition = 0,
+        bufferedPosition = newTime,
       )
     )
   }

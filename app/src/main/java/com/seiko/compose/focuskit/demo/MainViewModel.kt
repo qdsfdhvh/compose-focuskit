@@ -176,7 +176,7 @@ class MainViewModel : ViewModel() {
   val animePlayer = flow {
     emit(
       VideoPlayerSource.Network(
-        url = "https://v11.tkzyapi.com/20210827/90uHeEUi/index.m3u8"
+        url = "https://kol-fans.fp.ps.netease.com/file/614b593fa7f2522fce242d9f1se8gp1x03"
       )
     )
   }.stateIn(

@@ -4,39 +4,40 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.google.android.exoplayer2.Player
-import com.seiko.compose.player.internal.DefaultVideoPlayerController
+import androidx.compose.ui.platform.LocalContext
+import com.seiko.compose.player.internal.DefaultVlcVideoPlayerController
 import com.seiko.compose.player.ui.MediaControlKeyEvent
 import com.seiko.compose.player.ui.MediaControlLayout
-import com.seiko.compose.player.ui.MediaPlayerLayout
-
+import com.seiko.compose.player.ui.VlcMediaPlayerLayout
+import org.videolan.libvlc.MediaPlayer
 
 @Composable
-fun rememberVlcVideoPlayerController(player: Player): VideoPlayerController {
+fun rememberVlcVideoPlayerController(player: MediaPlayer): VideoPlayerController {
   val coroutineScope = rememberCoroutineScope()
   return rememberSaveable(
     player, coroutineScope,
-    saver = object : Saver<DefaultVideoPlayerController, VideoPlayerState> {
-      override fun restore(value: VideoPlayerState): DefaultVideoPlayerController {
-        return DefaultVideoPlayerController(
+    saver = object : Saver<DefaultVlcVideoPlayerController, VideoPlayerState> {
+      override fun restore(value: VideoPlayerState): DefaultVlcVideoPlayerController {
+        return DefaultVlcVideoPlayerController(
           player = player,
           initialState = value,
           coroutineScope = coroutineScope
         )
       }
 
-      override fun SaverScope.save(value: DefaultVideoPlayerController): VideoPlayerState {
+      override fun SaverScope.save(value: DefaultVlcVideoPlayerController): VideoPlayerState {
         return value.currentState
       }
     },
     init = {
-      DefaultVideoPlayerController(
+      DefaultVlcVideoPlayerController(
         player = player,
         initialState = VideoPlayerState(),
         coroutineScope = coroutineScope
@@ -46,15 +47,26 @@ fun rememberVlcVideoPlayerController(player: Player): VideoPlayerController {
 }
 
 @Composable
+fun rememberVlcPlayer(
+  source: VideoPlayerSource,
+  factory: VlcVideoPlayerFactory = VlcVideoPlayerFactory
+): MediaPlayer {
+  val context = LocalContext.current
+  return remember(source, factory) {
+    factory.createPlayer(context, source)
+  }
+}
+
+@Composable
 fun TvVlcVideoPlayer(
   source: VideoPlayerSource,
   modifier: Modifier = Modifier,
-  playerFactory: VideoPlayerFactory = VideoPlayerFactory,
+  playerFactory: VlcVideoPlayerFactory = VlcVideoPlayerFactory,
 ) {
-  val player = rememberPlayer(source, playerFactory)
-  val controller = rememberVideoPlayerController(player)
-  TvVideoPlayer(
-    player = player,
+  val mediaPlayer = rememberVlcPlayer(source, playerFactory)
+  val controller = rememberVlcVideoPlayerController(mediaPlayer)
+  TvVlcVideoPlayer(
+    mediaPlayer = mediaPlayer,
     controller = controller,
     modifier = modifier,
   )
@@ -62,7 +74,7 @@ fun TvVlcVideoPlayer(
 
 @Composable
 fun TvVlcVideoPlayer(
-  player: Player,
+  mediaPlayer: MediaPlayer,
   controller: VideoPlayerController,
   modifier: Modifier = Modifier,
 ) {
@@ -70,7 +82,7 @@ fun TvVlcVideoPlayer(
     LocalVideoPlayerController provides controller
   ) {
     Box(modifier = modifier.background(Color.Black)) {
-      MediaPlayerLayout(player, modifier = Modifier.matchParentSize())
+      VlcMediaPlayerLayout(mediaPlayer, modifier = Modifier.matchParentSize())
       MediaControlLayout(modifier = Modifier.matchParentSize())
       MediaControlKeyEvent(modifier = Modifier.matchParentSize())
     }

@@ -51,7 +51,7 @@ dependencies {
 
   // vlc
   val libVlcVersion = "3.4.0"
-  implementation("org.videolan.android:libvlc-all:$libVlcVersion")
+  api("org.videolan.android:libvlc-all:$libVlcVersion")
 
   // compose preview
   implementation("androidx.compose.ui:ui-tooling:$composeVersion")

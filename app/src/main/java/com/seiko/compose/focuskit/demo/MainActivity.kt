@@ -40,10 +40,10 @@ import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 import com.seiko.compose.focuskit.focusScrollVertical
 import com.seiko.compose.focuskit.handleTvKey
 import com.seiko.compose.focuskit.rememberFocusRequesters
-import com.seiko.compose.player.TvVideoPlayer
+import com.seiko.compose.player.TvVlcVideoPlayer
 import com.seiko.compose.player.VideoPlayerSource
-import com.seiko.compose.player.rememberPlayer
-import com.seiko.compose.player.rememberVideoPlayerController
+import com.seiko.compose.player.rememberVlcPlayer
+import com.seiko.compose.player.rememberVlcVideoPlayerController
 
 class MainActivity : ComponentActivity() {
 
@@ -194,8 +194,8 @@ fun DetailScreen(detail: AnimeDetail) {
 fun PlayerScreen(source: VideoPlayerSource) {
   var openDialog by remember { mutableStateOf(false) }
 
-  val player = rememberPlayer(source)
-  val controller = rememberVideoPlayerController(player)
+  val mediaPlayer = rememberVlcPlayer(source)
+  val controller = rememberVlcVideoPlayerController(mediaPlayer)
 
   var isPlaying by remember(source) { mutableStateOf(false) }
 
@@ -215,13 +215,13 @@ fun PlayerScreen(source: VideoPlayerSource) {
         if (!openDialog) {
           openDialog = true
           savePlayState()
-          player.pause()
+          controller.pause()
         }
         true
       }
   ) {
-    TvVideoPlayer(
-      player = player,
+    TvVlcVideoPlayer(
+      mediaPlayer = mediaPlayer,
       controller = controller,
       modifier = Modifier.fillMaxSize()
     )

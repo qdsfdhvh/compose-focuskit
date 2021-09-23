@@ -60,9 +60,8 @@ fun PlayerSurface(
     factory = { context ->
       PlayerView(context).apply {
         useController = false
+        onPlayerViewAvailable(this)
       }
     }
-  ) { playerView ->
-    onPlayerViewAvailable(playerView)
-  }
+  )
 }

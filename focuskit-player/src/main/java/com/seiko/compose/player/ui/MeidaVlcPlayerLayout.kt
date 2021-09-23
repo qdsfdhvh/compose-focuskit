@@ -24,11 +24,10 @@ fun VlcMediaPlayerLayout(mediaPlayer: MediaPlayer, modifier: Modifier = Modifier
   val lifecycle = LocalLifecycleOwner.current.lifecycle
 
   VlcPlayerSurface(modifier) { videoLayout ->
-    mediaPlayer.attachViews(videoLayout, null, true, true)
-
     lifecycle.addObserver(object : LifecycleObserver {
       @OnLifecycleEvent(Lifecycle.Event.ON_START)
       fun onStart() {
+        mediaPlayer.attachViews(videoLayout, null, true, true)
         videoLayout.keepScreenOn = true
         if (state.isPlaying) {
           controller.play()
@@ -37,6 +36,7 @@ fun VlcMediaPlayerLayout(mediaPlayer: MediaPlayer, modifier: Modifier = Modifier
 
       @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
       fun onStop() {
+        mediaPlayer.detachViews()
         videoLayout.keepScreenOn = false
         controller.pause()
       }
@@ -45,7 +45,9 @@ fun VlcMediaPlayerLayout(mediaPlayer: MediaPlayer, modifier: Modifier = Modifier
 
   DisposableEffect(Unit) {
     onDispose {
-      mediaPlayer.detachViews()
+      if (mediaPlayer.hasMedia()) {
+        mediaPlayer.media?.release()
+      }
       mediaPlayer.release()
     }
   }
@@ -59,9 +61,9 @@ fun VlcPlayerSurface(
   AndroidView(
     modifier = modifier,
     factory = { context ->
-      VLCVideoLayout(context)
+      VLCVideoLayout(context).apply {
+        onPlayerViewAvailable(this)
+      }
     }
-  ) { videoLayout ->
-    onPlayerViewAvailable(videoLayout)
-  }
+  )
 }

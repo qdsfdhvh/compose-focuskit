@@ -20,7 +20,7 @@ android {
     consumerProguardFiles("consumer-rules.pro")
     externalNativeBuild {
       cmake {
-        cppFlags("")
+        cppFlags("-std=c++11  -static-openmp -fopenmp")
       }
     }
   }
@@ -37,6 +37,7 @@ android {
   kotlinOptions {
     jvmTarget = jvmTargetVersion
   }
+  ndkVersion = "23.0.7599858"
 }
 
 dependencies {

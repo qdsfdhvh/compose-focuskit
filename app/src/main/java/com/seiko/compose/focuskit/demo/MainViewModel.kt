@@ -41,47 +41,47 @@ class MainViewModel : ViewModel() {
       listOf(
         Anime(
           "斗罗大陆",
-          "http://css.njhzmxx.com/acg/2021/07/17/20210717112154268.jpg",
+          "https://css.njhzmxx.com/acg/2021/07/17/20210717112154268.jpg",
           "/show/4066.html"
         ),
         Anime(
           "桃子男孩渡海而来",
-          "http://css.njhzmxx.com/down/1/808165613360701.jpg",
+          "https://css.njhzmxx.com/down/1/808165613360701.jpg",
           "/show/5037.html",
         ),
         Anime(
           "女友成双",
-          "http://css.njhzmxx.com/acg/2021/03/28/20210328084624549.jpg",
+          "https://css.njhzmxx.com/acg/2021/03/28/20210328084624549.jpg",
           "/show/5224.html",
         ),
         Anime(
           "BLUE REFLECTION RAY / 澪",
-          "http://css.njhzmxx.com/acg/2021/02/18/20210218061311802.jpg",
+          "https://css.njhzmxx.com/acg/2021/02/18/20210218061311802.jpg",
           "/show/5190.html",
         ),
         Anime(
           "转生恶役只好拔除破灭旗标 第二季",
-          "http://css.njhzmxx.com/acg/2020/06/21/20200621095007415.jpg",
+          "https://css.njhzmxx.com/acg/2020/06/21/20200621095007415.jpg",
           "/show/5009.html",
         ),
         Anime(
           "瓦尼塔斯的笔记",
-          "http://css.njhzmxx.com/acg/2021/03/30/20210330083355930.jpg",
+          "https://css.njhzmxx.com/acg/2021/03/30/20210330083355930.jpg",
           "/show/5229.html",
         ),
         Anime(
           "我立于百万生命之上 第二季",
-          "http://css.njhzmxx.com/acg/2021/07/02/20210702110715724.jpg",
+          "https://css.njhzmxx.com/acg/2021/07/02/20210702110715724.jpg",
           "/show/5295.html",
         ),
         Anime(
           "异世界迷宫黑心企业",
-          "http://css.njhzmxx.com/acg/2021/03/26/20210326053709364.jpg",
+          "https://css.njhzmxx.com/acg/2021/03/26/20210326053709364.jpg",
           "/show/5220.html",
         ),
         Anime(
           "白沙的水族馆",
-          "http://css.njhzmxx.com/acg/2021/07/08/20210708111909554.jpg",
+          "https://css.njhzmxx.com/acg/2021/07/08/20210708111909554.jpg",
           "/show/5311.html",
         ),
       )

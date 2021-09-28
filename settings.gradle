@@ -22,3 +22,4 @@ rootProject.name = "compose-focuskit"
 include ':app'
 include ':focuskit'
 include ':player'
+include ':ncnnsr'

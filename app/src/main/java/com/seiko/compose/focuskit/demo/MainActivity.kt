@@ -37,9 +37,11 @@ import com.seiko.compose.focuskit.demo.ui.foundation.TvSelectDialog
 import com.seiko.compose.focuskit.demo.ui.foundation.TvTabBar
 import com.seiko.compose.focuskit.demo.ui.foundation.TvTitleGroup
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
+import com.seiko.compose.focuskit.demo.util.ToastUtils
 import com.seiko.compose.focuskit.focusScrollVertical
 import com.seiko.compose.focuskit.handleTvKey
 import com.seiko.compose.focuskit.rememberFocusRequesters
+import com.seiko.compose.ncnnsr.NativeLib
 import com.seiko.compose.player.TvVideoPlayer
 import com.seiko.compose.player.VideoPlayerSource
 import com.seiko.compose.player.rememberPlayer
@@ -58,6 +60,9 @@ class MainActivity : ComponentActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
+    ToastUtils.showToast(applicationContext, NativeLib.stringFromJNI())
+
     setContent {
       AnimeTvTheme {
         CompositionLocalProvider(

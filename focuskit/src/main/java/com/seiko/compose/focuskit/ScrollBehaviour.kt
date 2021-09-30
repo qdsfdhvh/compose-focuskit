@@ -11,6 +11,9 @@ import androidx.compose.ui.unit.dp
 
 interface ScrollBehaviour {
   suspend fun onScroll(state: LazyListState, focusItem: LazyListItemInfo, density: Density)
+  suspend fun onScroll(state: LazyListState, index: Int, density: Density) {
+    state.scrollToItem(index)
+  }
 
   companion object {
     val Horizontal: ScrollBehaviour get() = HorizontalImpl
@@ -40,7 +43,7 @@ private object HorizontalImpl : ScrollBehaviour {
       itemEnd < leftLine -> (-itemSize).toFloat()
       else -> return
     }
-    state.startScroll(value)
+    state.startScrollNormal(value)
   }
 }
 
@@ -64,11 +67,11 @@ private object VerticalImpl : ScrollBehaviour {
       itemEnd > viewStart + viewSize -> (itemEnd - viewSize - viewStart).toFloat() + offSect
       else -> return
     }
-    state.startScroll(value)
+    state.startScrollNormal(value)
   }
 }
 
-private suspend fun LazyListState.startScroll(value: Float) {
+suspend fun LazyListState.startScrollNormal(value: Float) {
   stopScroll()
   animateScrollBy(value, tween(SCROLL_ANIMATION_DURATION, 0, LinearEasing))
 }

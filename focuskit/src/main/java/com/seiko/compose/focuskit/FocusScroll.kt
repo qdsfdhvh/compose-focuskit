@@ -15,6 +15,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalDensity
 import kotlinx.coroutines.launch
 
@@ -76,6 +77,28 @@ fun Modifier.focusScroll(
       }
       true
     }
+}
+
+@SuppressLint("UnnecessaryComposedModifier")
+fun Modifier.focusScroll(
+  state: LazyListState,
+  index: Int,
+  scrollBehaviour: ScrollBehaviour,
+) = composed {
+  val density = LocalDensity.current
+  val scope = rememberCoroutineScope()
+  this.onFocusChanged { focusState ->
+    if (focusState.isFocused) {
+      scope.launch {
+        val focusItem = state.layoutInfo.visibleItemsInfo.find { it.index == index }
+        if (focusItem != null) {
+          scrollBehaviour.onScroll(state, focusItem, density)
+        } else {
+          scrollBehaviour.onScroll(state, index, density)
+        }
+      }
+    }
+  }
 }
 
 private val Saver = mapSaver(

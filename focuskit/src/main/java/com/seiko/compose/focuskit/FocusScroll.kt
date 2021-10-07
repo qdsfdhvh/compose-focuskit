@@ -56,27 +56,26 @@ fun Modifier.focusScroll(
     onDispose { }
   }
 
-  this
-    .onTvKeyEvent { key ->
-      if (state.isScrollInProgress) {
-        return@onTvKeyEvent true
-      }
-
-      val nextFocusIndex = nextFocusBehaviour.getNext(key, state, focusIndexInteraction.index)
-        ?: return@onTvKeyEvent false
-
-      val foundItem = state.layoutInfo.visibleItemsInfo.find { it.index == nextFocusIndex }
-        ?: return@onTvKeyEvent false
-
-      scope.launch {
-        val interaction = FocusIndexInteraction(nextFocusIndex)
-        send(interaction)
-        focusIndexInteraction = interaction
-
-        scrollBehaviour.onScroll(state, foundItem, density)
-      }
-      true
+  onTvKeyEvent { key ->
+    if (state.isScrollInProgress) {
+      return@onTvKeyEvent true
     }
+
+    val nextFocusIndex = nextFocusBehaviour.getNext(key, state, focusIndexInteraction.index)
+      ?: return@onTvKeyEvent false
+
+    val foundItem = state.layoutInfo.visibleItemsInfo.find { it.index == nextFocusIndex }
+      ?: return@onTvKeyEvent false
+
+    scope.launch {
+      val interaction = FocusIndexInteraction(nextFocusIndex)
+      send(interaction)
+      focusIndexInteraction = interaction
+
+      scrollBehaviour.onScroll(state, foundItem, density)
+    }
+    true
+  }
 }
 
 @SuppressLint("UnnecessaryComposedModifier")
@@ -87,7 +86,7 @@ fun Modifier.focusScroll(
 ) = composed {
   val density = LocalDensity.current
   val scope = rememberCoroutineScope()
-  this.onFocusChanged { focusState ->
+  onFocusChanged { focusState ->
     if (focusState.isFocused) {
       scope.launch {
         val focusItem = state.layoutInfo.visibleItemsInfo.find { it.index == index }

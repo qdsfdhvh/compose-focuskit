@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusOrder
@@ -31,6 +32,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.seiko.compose.focuskit.TvKeyEvent
 import com.seiko.compose.focuskit.collectFocusIndexAsState
+import com.seiko.compose.focuskit.createRefs
 import com.seiko.compose.focuskit.demo.model.AnimeDetail
 import com.seiko.compose.focuskit.demo.ui.foundation.TvEpisodeList
 import com.seiko.compose.focuskit.demo.ui.foundation.TvMovieInfo
@@ -40,7 +42,7 @@ import com.seiko.compose.focuskit.demo.ui.foundation.TvTitleGroup
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 import com.seiko.compose.focuskit.focusScrollVertical
 import com.seiko.compose.focuskit.handleTvKey
-import com.seiko.compose.focuskit.rememberFocusRequesters
+import com.seiko.compose.focuskit.requestFocus
 import com.seiko.compose.player.TvVideoPlayer
 import com.seiko.compose.player.VideoPlayerSource
 import com.seiko.compose.player.rememberPlayer
@@ -107,12 +109,9 @@ fun HomeScreen(
   tabList: List<String> = emptyList(),
   animeGroup: AnimeGroup = emptyList(),
 ) {
-
-  val size = remember(animeGroup) { 1 + animeGroup.size }
-  val focusRequesters = rememberFocusRequesters(size)
-
   val state = rememberLazyListState()
   val focusIndex by state.interactionSource.collectFocusIndexAsState()
+  val focusRequesters = remember(animeGroup) { FocusRequester.createRefs(1 + animeGroup.size) }
 
   LazyColumn(
     state = state,
@@ -136,24 +135,20 @@ fun HomeScreen(
   }
 
   LaunchedEffect(focusIndex, tabList, animeGroup) {
-    focusRequesters.getOrNull(focusIndex)?.requestFocus()
+    focusRequesters.requestFocus(focusIndex)
   }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun DetailScreen(detail: AnimeDetail) {
-  val navController = LocalAppNavigator.current
-  val focusRequesters = rememberFocusRequesters(3)
-
   val state = rememberLazyListState()
   val focusIndex by state.interactionSource.collectFocusIndexAsState()
+  val focusRequesters = remember { FocusRequester.createRefs(3) }
 
   LazyColumn(
     state = state,
     modifier = Modifier
-      .handleTvKey(TvKeyEvent.Back) {
-        navController.popBackStack()
-      }
       .focusScrollVertical(state)
       .focusable(),
   ) {
@@ -186,8 +181,8 @@ fun DetailScreen(detail: AnimeDetail) {
     }
   }
 
-  LaunchedEffect(focusIndex) {
-    focusRequesters.getOrNull(focusIndex)?.requestFocus()
+  LaunchedEffect(detail, focusIndex) {
+    focusRequesters.requestFocus(focusIndex)
   }
 }
 

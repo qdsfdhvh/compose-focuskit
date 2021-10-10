@@ -1,10 +1,7 @@
 package com.seiko.compose.focuskit
 
 import androidx.compose.foundation.clickable
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 
@@ -35,18 +32,3 @@ fun Modifier.focusClick(onClick: () -> Unit) =
       onClick()
       true
     }
-
-@Composable
-fun <T : Any> rememberFocusRequesters(array: Array<T>) = remember(array) {
-  List(array.size) { FocusRequester() }
-}
-
-@Composable
-fun <T : Any> rememberFocusRequesters(list: Collection<T>) = remember(list) {
-  List(list.size) { FocusRequester() }
-}
-
-@Composable
-fun rememberFocusRequesters(size: Int) = remember(size) {
-  List(size) { FocusRequester() }
-}

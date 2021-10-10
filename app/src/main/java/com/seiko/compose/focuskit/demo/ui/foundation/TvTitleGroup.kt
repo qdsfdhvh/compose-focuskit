@@ -37,13 +37,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.seiko.compose.focuskit.collectFocusIndexAsState
+import com.seiko.compose.focuskit.createRefs
 import com.seiko.compose.focuskit.demo.LocalAppNavigator
 import com.seiko.compose.focuskit.demo.model.Anime
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 import com.seiko.compose.focuskit.demo.ui.theme.backgroundColor
 import com.seiko.compose.focuskit.focusClick
 import com.seiko.compose.focuskit.focusScrollHorizontal
-import com.seiko.compose.focuskit.rememberFocusRequesters
+import com.seiko.compose.focuskit.requestFocus
 
 @Composable
 fun TvTitleGroup(
@@ -53,11 +54,10 @@ fun TvTitleGroup(
 ) {
   val navController = LocalAppNavigator.current
 
-  val focusRequesters = rememberFocusRequesters(list)
-
   val state = rememberLazyListState()
   val focusIndex by state.interactionSource.collectFocusIndexAsState()
   var isParentFocused by remember { mutableStateOf(false) }
+  val focusRequesters = remember(list) { FocusRequester.createRefs(list.size) }
 
   Column {
     Text(
@@ -87,7 +87,7 @@ fun TvTitleGroup(
 
     LaunchedEffect(focusIndex, isParentFocused) {
       if (isParentFocused) {
-        focusRequesters.getOrNull(focusIndex)?.requestFocus()
+        focusRequesters.requestFocus(focusIndex)
       }
     }
   }

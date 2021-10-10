@@ -22,7 +22,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusOrder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.ComposeNavigator
 import androidx.navigation.compose.DialogNavigator
@@ -122,14 +123,14 @@ fun HomeScreen(
     item {
       TvTabBar(
         tabList,
-        modifier = Modifier.focusRequester(focusRequesters[0])
+        modifier = Modifier.focusOrder(focusRequesters[0])
       )
     }
     itemsIndexed(animeGroup) { index, pair ->
       val (title, animes) = pair
       TvTitleGroup(
         title, animes,
-        modifier = Modifier.focusRequester(focusRequesters[index + 1])
+        modifier = Modifier.focusOrder(focusRequesters[index + 1])
       )
     }
   }
@@ -158,7 +159,7 @@ fun DetailScreen(detail: AnimeDetail) {
   ) {
     item {
       TvMovieInfo(
-        modifier = Modifier.focusRequester(focusRequesters[0]),
+        modifier = Modifier.focusOrder(focusRequesters[0]),
         title = detail.title,
         cover = detail.cover,
         releaseTime = detail.releaseTime,
@@ -170,7 +171,7 @@ fun DetailScreen(detail: AnimeDetail) {
 
     item {
       TvEpisodeList(
-        modifier = Modifier.focusRequester(focusRequesters[1]),
+        modifier = Modifier.focusOrder(focusRequesters[1]),
         title = "播放列表",
         list = detail.episodeList,
       )
@@ -178,7 +179,7 @@ fun DetailScreen(detail: AnimeDetail) {
 
     item {
       TvTitleGroup(
-        modifier = Modifier.focusRequester(focusRequesters[2]),
+        modifier = Modifier.focusOrder(focusRequesters[2]),
         title = "相关推荐",
         list = detail.relatedList
       )

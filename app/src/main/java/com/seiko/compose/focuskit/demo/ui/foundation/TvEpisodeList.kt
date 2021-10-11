@@ -31,7 +31,6 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.seiko.compose.focuskit.ScrollBehaviour
-import com.seiko.compose.focuskit.createRefs
 import com.seiko.compose.focuskit.demo.LocalAppNavigator
 import com.seiko.compose.focuskit.demo.model.AnimeEpisode
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
@@ -49,7 +48,6 @@ fun TvEpisodeList(
 
   val state = rememberLazyListState()
   var isParentFocused by remember { mutableStateOf(false) }
-  val focusRequesters = remember(list) { FocusRequester.createRefs(list.size) }
   var focusIndex by rememberSaveable(stateSaver = autoSaver()) { mutableStateOf(0) }
 
   Column {
@@ -66,6 +64,7 @@ fun TvEpisodeList(
         .focusTarget(),
     ) {
       itemsIndexed(list) { index, item ->
+        val focusRequester = remember { FocusRequester() }
         var isFocused by remember { mutableStateOf(false) }
         EpisodeItem(
           modifier = Modifier
@@ -74,14 +73,14 @@ fun TvEpisodeList(
               if (isFocused) focusIndex = index
             }
             .focusClick { navController.navigate(item.actionUrl) }
-            .focusOrder(focusRequesters[index])
+            .focusOrder(focusRequester)
             .focusTarget(),
           episode = item,
           isFocused = isFocused,
         )
 
         if (isParentFocused && focusIndex == index) {
-          SideEffect { focusRequesters[index].requestFocus() }
+          SideEffect { focusRequester.requestFocus() }
         }
       }
     }

@@ -31,7 +31,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.seiko.compose.focuskit.ScrollBehaviour
-import com.seiko.compose.focuskit.createRefs
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 import com.seiko.compose.focuskit.demo.ui.theme.backgroundColor
 import com.seiko.compose.focuskit.scrollToIndex
@@ -44,7 +43,6 @@ fun TvTabBar(
   val state = rememberLazyListState()
 
   var isParentFocused by remember { mutableStateOf(false) }
-  val focusRequesters = remember(tabList) { FocusRequester.createRefs(tabList.size) }
   var focusIndex by rememberSaveable(stateSaver = autoSaver()) { mutableStateOf(0) }
 
   LazyRow(
@@ -54,6 +52,7 @@ fun TvTabBar(
       .focusTarget(),
   ) {
     itemsIndexed(tabList) { index, title ->
+      val focusRequester = remember { FocusRequester() }
       var isFocused by remember { mutableStateOf(false) }
       TvTabBarItem(
         modifier = Modifier
@@ -61,7 +60,7 @@ fun TvTabBar(
             isFocused = it.isFocused
             if (isFocused) focusIndex = index
           }
-          .focusOrder(focusRequesters[index])
+          .focusOrder(focusRequester)
           .focusTarget(),
         title = title,
         isFocused = isFocused,
@@ -69,7 +68,7 @@ fun TvTabBar(
       )
 
       if (isParentFocused && focusIndex == index) {
-        SideEffect { focusRequesters[index].requestFocus() }
+        SideEffect { focusRequester.requestFocus() }
       }
     }
   }

@@ -35,7 +35,6 @@ import androidx.navigation.compose.DialogNavigator
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.seiko.compose.focuskit.ScrollBehaviour
-import com.seiko.compose.focuskit.createRefs
 import com.seiko.compose.focuskit.demo.model.AnimeDetail
 import com.seiko.compose.focuskit.demo.ui.foundation.DetailAnimeInfo
 import com.seiko.compose.focuskit.demo.ui.foundation.TvEpisodeList
@@ -45,7 +44,6 @@ import com.seiko.compose.focuskit.demo.ui.foundation.TvTitleGroup
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 import com.seiko.compose.focuskit.handleBack
 import com.seiko.compose.focuskit.handleBackReturn
-import com.seiko.compose.focuskit.requestFocus
 import com.seiko.compose.focuskit.scrollToIndex
 import com.seiko.compose.player.TvVideoPlayer
 import com.seiko.compose.player.VideoPlayerSource
@@ -117,11 +115,11 @@ fun HomeScreen(
 ) {
   val state = rememberLazyListState()
 
-  val focusRequesters = remember(animeGroup) { FocusRequester.createRefs(1 + animeGroup.size) }
   var focusIndex by rememberSaveable(stateSaver = autoSaver()) { mutableStateOf(0) }
 
   LazyColumn(state = state) {
     item {
+      val focusRequester = remember { FocusRequester() }
       TvTabBar(
         tabList,
         modifier = Modifier
@@ -131,14 +129,15 @@ fun HomeScreen(
               Log.d("Focuskit", "home focusIndex=0")
             }
           }
-          .focusOrder(focusRequesters[0])
+          .focusOrder(focusRequester)
       )
 
       if (focusIndex == 0) {
-        SideEffect { focusRequesters[0].requestFocus() }
+        SideEffect { focusRequester.requestFocus() }
       }
     }
     itemsIndexed(animeGroup) { index, pair ->
+      val focusRequester = remember { FocusRequester() }
       val (title, animes) = pair
       TvTitleGroup(
         title, animes,
@@ -149,11 +148,11 @@ fun HomeScreen(
               Log.d("Focuskit", "home focusIndex=${1 + index}")
             }
           }
-          .focusOrder(focusRequesters[1 + index])
+          .focusOrder(focusRequester)
       )
 
       if (focusIndex == 1 + index) {
-        SideEffect { focusRequesters[1 + index].requestFocus() }
+        SideEffect { focusRequester.requestFocus() }
       }
     }
   }
@@ -168,16 +167,15 @@ fun HomeScreen(
 @Composable
 fun DetailScreen(detail: AnimeDetail) {
   val state = rememberLazyListState()
-
-  val focusRequesters = remember { FocusRequester.createRefs(3) }
   var focusIndex by rememberSaveable(stateSaver = autoSaver()) { mutableStateOf(0) }
 
   LazyColumn(state = state) {
     item {
+      val focusRequester = remember { FocusRequester() }
       DetailAnimeInfo(
         modifier = Modifier
           .onFocusChanged { if (it.isFocused) focusIndex = 0 }
-          .focusOrder(focusRequesters[0]),
+          .focusOrder(focusRequester),
         title = detail.title,
         cover = detail.cover,
         releaseTime = detail.releaseTime,
@@ -189,35 +187,37 @@ fun DetailScreen(detail: AnimeDetail) {
       )
 
       if (focusIndex == 0) {
-        SideEffect { focusRequesters[0].requestFocus() }
+        SideEffect { focusRequester.requestFocus() }
       }
     }
 
     item {
+      val focusRequester = remember { FocusRequester() }
       TvEpisodeList(
         modifier = Modifier
           .onFocusChanged { if (it.isFocused) focusIndex = 1 }
-          .focusOrder(focusRequesters[1]),
+          .focusOrder(focusRequester),
         title = "播放列表",
         list = detail.episodeList,
       )
 
       if (focusIndex == 1) {
-        SideEffect { focusRequesters[1].requestFocus() }
+        SideEffect { focusRequester.requestFocus() }
       }
     }
 
     item {
+      val focusRequester = remember { FocusRequester() }
       TvTitleGroup(
         modifier = Modifier
           .onFocusChanged { if (it.isFocused) focusIndex = 2 }
-          .focusOrder(focusRequesters[2]),
+          .focusOrder(focusRequester),
         title = "相关推荐",
         list = detail.relatedList
       )
 
       if (focusIndex == 2) {
-        SideEffect { focusRequesters[2].requestFocus() }
+        SideEffect { focusRequester.requestFocus() }
       }
     }
   }

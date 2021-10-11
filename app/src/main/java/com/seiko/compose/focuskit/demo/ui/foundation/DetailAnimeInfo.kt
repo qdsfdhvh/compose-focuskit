@@ -35,7 +35,6 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.seiko.compose.focuskit.createRefs
 import com.seiko.compose.focuskit.demo.model.AnimeTag
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 
@@ -140,9 +139,6 @@ private fun DetailAnimeInfoDesc(
 
   var isParentFocused by remember { mutableStateOf(false) }
   var focusIndex by rememberSaveable(stateSaver = autoSaver()) { mutableStateOf(0) }
-  val focusRequesters = remember(tags, types, indexes) {
-    FocusRequester.createRefs(tags.size + types.size + indexes.size)
-  }
 
   Row(
     modifier = modifier
@@ -150,18 +146,19 @@ private fun DetailAnimeInfoDesc(
       .focusTarget()
   ) {
     (tags + types + indexes).forEachIndexed { index, tag ->
+      val focusRequester = remember { FocusRequester() }
       FocusableTextButton(
         text = tag.title,
         onClick = { onTagClick(tag) },
         modifier = Modifier
           .onFocusChanged { if (it.isFocused) focusIndex = index }
-          .focusOrder(focusRequesters[index])
+          .focusOrder(focusRequester)
       )
       Spacer(modifier = Modifier.width(10.dp))
 
       if (isParentFocused && focusIndex == index) {
         SideEffect {
-          focusRequesters[index].requestFocus()
+          focusRequester.requestFocus()
         }
       }
     }

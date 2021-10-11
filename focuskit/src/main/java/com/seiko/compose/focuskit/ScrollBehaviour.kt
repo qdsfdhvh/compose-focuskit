@@ -6,74 +6,34 @@ import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.stopScroll
 import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.dp
+import com.seiko.compose.focuskit.internal.HorizontalScrollBehaviour
+import com.seiko.compose.focuskit.internal.VerticalScrollBehaviour
 
 interface ScrollBehaviour {
-  suspend fun onScroll(state: LazyListState, focusItem: LazyListItemInfo, density: Density)
-  suspend fun onScroll(state: LazyListState, index: Int, density: Density) {
-    state.scrollToItem(index)
-  }
+  suspend fun onScroll(state: LazyListState, focusIndex: Int)
 
   companion object {
-    val Horizontal: ScrollBehaviour get() = HorizontalImpl
-    val Vertical: ScrollBehaviour get() = VerticalImpl
+    val Horizontal: ScrollBehaviour get() = HorizontalScrollBehaviour
+    val Vertical: ScrollBehaviour get() = VerticalScrollBehaviour
   }
 }
 
-private object HorizontalImpl : ScrollBehaviour {
-  override suspend fun onScroll(
-    state: LazyListState,
-    focusItem: LazyListItemInfo,
-    density: Density
-  ) {
-    val viewStart = state.layoutInfo.viewportStartOffset
-    val viewEnd = state.layoutInfo.viewportEndOffset
-    val viewSize = viewEnd - viewStart
-
-    val itemStart = focusItem.offset
-    val itemEnd = focusItem.offset + focusItem.size
-    val itemSize = focusItem.size
-
-    val leftLine = viewStart + viewSize * 0.3
-    val rightLine = viewStart + viewSize * 0.7
-
-    val value = when {
-      itemStart > rightLine -> itemSize.toFloat()
-      itemEnd < leftLine -> (-itemSize).toFloat()
-      else -> return
-    }
-    state.startScrollNormal(value)
+abstract class ItemScrollBehaviour : ScrollBehaviour {
+  override suspend fun onScroll(state: LazyListState, focusIndex: Int) {
+    val focusItem = state.layoutInfo.visibleItemsInfo.find { focusIndex == it.index }
+    if (focusItem != null) onScroll(state, focusItem)
   }
+
+  abstract suspend fun onScroll(state: LazyListState, focusItem: LazyListItemInfo)
 }
 
-private object VerticalImpl : ScrollBehaviour {
-  override suspend fun onScroll(
-    state: LazyListState,
-    focusItem: LazyListItemInfo,
-    density: Density
-  ) {
-    val viewStart = state.layoutInfo.viewportStartOffset
-    val viewEnd = state.layoutInfo.viewportEndOffset
-    val viewSize = viewEnd - viewStart
-
-    val itemStart = focusItem.offset
-    val itemEnd = focusItem.offset + focusItem.size
-
-    val offSect = density.run { 20.dp.roundToPx() }
-
-    val value = when {
-      itemStart < viewStart -> itemStart.toFloat() - offSect
-      itemEnd > viewStart + viewSize -> (itemEnd - viewSize - viewStart).toFloat() + offSect
-      else -> return
-    }
-    state.startScrollNormal(value)
-  }
-}
-
-suspend fun LazyListState.startScrollNormal(value: Float) {
+suspend fun LazyListState.tweenAnimateScrollBy(value: Float) {
   stopScroll()
   animateScrollBy(value, tween(SCROLL_ANIMATION_DURATION, 0, LinearEasing))
 }
 
 private const val SCROLL_ANIMATION_DURATION = 150
+
+suspend fun LazyListState.scrollToIndex(focusIndex: Int, scrollBehaviour: ScrollBehaviour) {
+  scrollBehaviour.onScroll(this, focusIndex)
+}

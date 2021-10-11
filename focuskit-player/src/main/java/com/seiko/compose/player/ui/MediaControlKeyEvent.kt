@@ -1,6 +1,5 @@
 package com.seiko.compose.player.ui
 
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FastForward
@@ -11,14 +10,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import com.seiko.compose.focuskit.TvKeyEvent
-import com.seiko.compose.focuskit.onTvKeyEvent
+import androidx.compose.ui.focus.focusTarget
+import com.seiko.compose.focuskit.onFocusDirection
 import com.seiko.compose.player.LocalVideoPlayerController
 import com.seiko.compose.player.VideoSeekDirection
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MediaControlKeyEvent(modifier: Modifier = Modifier) {
   val controller = LocalVideoPlayerController.current
@@ -28,9 +30,9 @@ fun MediaControlKeyEvent(modifier: Modifier = Modifier) {
 
   Box(
     modifier = modifier
-      .onTvKeyEvent {
+      .onFocusDirection {
         when (it) {
-          TvKeyEvent.Enter -> {
+          FocusDirection.In -> {
             if (state.isPlaying) {
               controller.pause()
               controller.showControl()
@@ -40,7 +42,7 @@ fun MediaControlKeyEvent(modifier: Modifier = Modifier) {
             }
             true
           }
-          TvKeyEvent.Down -> {
+          FocusDirection.Down -> {
             if (state.controlsVisible) {
               controller.hideControl()
             } else {
@@ -48,15 +50,15 @@ fun MediaControlKeyEvent(modifier: Modifier = Modifier) {
             }
             true
           }
-          TvKeyEvent.Left -> {
+          FocusDirection.Left -> {
             controller.seekRewind()
             true
           }
-          TvKeyEvent.Right -> {
+          FocusDirection.Right -> {
             controller.seekForward()
             true
           }
-          TvKeyEvent.Back -> {
+          FocusDirection.Out -> {
             if (state.controlsVisible) {
               controller.hideControl()
               true
@@ -66,7 +68,7 @@ fun MediaControlKeyEvent(modifier: Modifier = Modifier) {
         }
       }
       .focusRequester(focusRequester)
-      .focusable(),
+      .focusTarget(),
   ) {
     VideoSeekAnimation(
       modifier = Modifier.matchParentSize(),

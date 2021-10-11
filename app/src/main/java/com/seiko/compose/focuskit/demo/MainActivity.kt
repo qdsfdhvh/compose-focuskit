@@ -1,11 +1,11 @@
 package com.seiko.compose.focuskit.demo
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,33 +16,37 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.autoSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusOrder
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.ComposeNavigator
 import androidx.navigation.compose.DialogNavigator
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.seiko.compose.focuskit.TvKeyEvent
-import com.seiko.compose.focuskit.collectFocusIndexAsState
+import com.seiko.compose.focuskit.ScrollBehaviour
 import com.seiko.compose.focuskit.createRefs
 import com.seiko.compose.focuskit.demo.model.AnimeDetail
+import com.seiko.compose.focuskit.demo.ui.foundation.DetailAnimeInfo
 import com.seiko.compose.focuskit.demo.ui.foundation.TvEpisodeList
-import com.seiko.compose.focuskit.demo.ui.foundation.TvMovieInfo
 import com.seiko.compose.focuskit.demo.ui.foundation.TvSelectDialog
 import com.seiko.compose.focuskit.demo.ui.foundation.TvTabBar
 import com.seiko.compose.focuskit.demo.ui.foundation.TvTitleGroup
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
-import com.seiko.compose.focuskit.focusScrollVertical
-import com.seiko.compose.focuskit.handleTvKey
+import com.seiko.compose.focuskit.handleBack
+import com.seiko.compose.focuskit.handleBackReturn
 import com.seiko.compose.focuskit.requestFocus
+import com.seiko.compose.focuskit.scrollToIndex
 import com.seiko.compose.player.TvVideoPlayer
 import com.seiko.compose.player.VideoPlayerSource
 import com.seiko.compose.player.rememberPlayer
@@ -67,7 +71,9 @@ class MainActivity : ComponentActivity() {
           LocalAppNavigator provides navController
         ) {
           Surface(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+              .fillMaxSize()
+              .handleBackReturn { navController.popBackStack() },
             color = MaterialTheme.colors.background
           ) {
             Router(navController, viewModel)
@@ -110,32 +116,51 @@ fun HomeScreen(
   animeGroup: AnimeGroup = emptyList(),
 ) {
   val state = rememberLazyListState()
-  val focusIndex by state.interactionSource.collectFocusIndexAsState()
-  val focusRequesters = remember(animeGroup) { FocusRequester.createRefs(1 + animeGroup.size) }
 
-  LazyColumn(
-    state = state,
-    modifier = Modifier
-      .focusScrollVertical(state)
-      .focusable(),
-  ) {
+  val focusRequesters = remember(animeGroup) { FocusRequester.createRefs(1 + animeGroup.size) }
+  var focusIndex by rememberSaveable(stateSaver = autoSaver()) { mutableStateOf(0) }
+
+  LazyColumn(state = state) {
     item {
       TvTabBar(
         tabList,
-        modifier = Modifier.focusOrder(focusRequesters[0])
+        modifier = Modifier
+          .onFocusChanged {
+            if (it.isFocused) {
+              focusIndex = 0
+              Log.d("Focuskit", "home focusIndex=0")
+            }
+          }
+          .focusOrder(focusRequesters[0])
       )
+
+      if (focusIndex == 0) {
+        SideEffect { focusRequesters[0].requestFocus() }
+      }
     }
     itemsIndexed(animeGroup) { index, pair ->
       val (title, animes) = pair
       TvTitleGroup(
         title, animes,
-        modifier = Modifier.focusOrder(focusRequesters[index + 1])
+        modifier = Modifier
+          .onFocusChanged {
+            if (it.isFocused) {
+              focusIndex = 1 + index
+              Log.d("Focuskit", "home focusIndex=${1 + index}")
+            }
+          }
+          .focusOrder(focusRequesters[1 + index])
       )
+
+      if (focusIndex == 1 + index) {
+        SideEffect { focusRequesters[1 + index].requestFocus() }
+      }
     }
   }
 
-  LaunchedEffect(focusIndex, tabList, animeGroup) {
-    focusRequesters.requestFocus(focusIndex)
+  LaunchedEffect(focusIndex) {
+    Log.d("Focuskit", "home move to focusIndex=$focusIndex")
+    state.scrollToIndex(focusIndex, ScrollBehaviour.Vertical)
   }
 }
 
@@ -143,46 +168,62 @@ fun HomeScreen(
 @Composable
 fun DetailScreen(detail: AnimeDetail) {
   val state = rememberLazyListState()
-  val focusIndex by state.interactionSource.collectFocusIndexAsState()
-  val focusRequesters = remember { FocusRequester.createRefs(3) }
 
-  LazyColumn(
-    state = state,
-    modifier = Modifier
-      .focusScrollVertical(state)
-      .focusable(),
-  ) {
+  val focusRequesters = remember { FocusRequester.createRefs(3) }
+  var focusIndex by rememberSaveable(stateSaver = autoSaver()) { mutableStateOf(0) }
+
+  LazyColumn(state = state) {
     item {
-      TvMovieInfo(
-        modifier = Modifier.focusOrder(focusRequesters[0]),
+      DetailAnimeInfo(
+        modifier = Modifier
+          .onFocusChanged { if (it.isFocused) focusIndex = 0 }
+          .focusOrder(focusRequesters[0]),
         title = detail.title,
         cover = detail.cover,
         releaseTime = detail.releaseTime,
         state = detail.state,
+        types = detail.types,
         tags = detail.tags,
+        indexes = detail.indexes,
         description = detail.description,
       )
+
+      if (focusIndex == 0) {
+        SideEffect { focusRequesters[0].requestFocus() }
+      }
     }
 
     item {
       TvEpisodeList(
-        modifier = Modifier.focusOrder(focusRequesters[1]),
+        modifier = Modifier
+          .onFocusChanged { if (it.isFocused) focusIndex = 1 }
+          .focusOrder(focusRequesters[1]),
         title = "播放列表",
         list = detail.episodeList,
       )
+
+      if (focusIndex == 1) {
+        SideEffect { focusRequesters[1].requestFocus() }
+      }
     }
 
     item {
       TvTitleGroup(
-        modifier = Modifier.focusOrder(focusRequesters[2]),
+        modifier = Modifier
+          .onFocusChanged { if (it.isFocused) focusIndex = 2 }
+          .focusOrder(focusRequesters[2]),
         title = "相关推荐",
         list = detail.relatedList
       )
+
+      if (focusIndex == 2) {
+        SideEffect { focusRequesters[2].requestFocus() }
+      }
     }
   }
 
-  LaunchedEffect(detail, focusIndex) {
-    focusRequesters.requestFocus(focusIndex)
+  LaunchedEffect(focusIndex) {
+    state.scrollToIndex(focusIndex, ScrollBehaviour.Vertical)
   }
 }
 
@@ -207,13 +248,12 @@ fun PlayerScreen(source: VideoPlayerSource) {
 
   Box(
     modifier = Modifier
-      .handleTvKey(TvKeyEvent.Back) {
+      .handleBack {
         if (!openDialog) {
           openDialog = true
           savePlayState()
           player.pause()
         }
-        true
       }
   ) {
     TvVideoPlayer(

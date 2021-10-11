@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.seiko.compose.focuskit.demo.model.Anime
 import com.seiko.compose.focuskit.demo.model.AnimeDetail
 import com.seiko.compose.focuskit.demo.model.AnimeEpisode
+import com.seiko.compose.focuskit.demo.model.AnimeTag
 import com.seiko.compose.player.VideoPlayerSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -103,9 +104,9 @@ class MainViewModel : ViewModel() {
         rating = 5.0f,
         releaseTime = "2021-07",
         area = "日本",
-        types = listOf("校园", "恋爱"),
-        indexes = listOf("W动漫"),
-        tags = listOf("日语", "tv"),
+        types = listOf("校园", "恋爱").map { AnimeTag(it, "/show/5220.html") },
+        indexes = listOf("W动漫").map { AnimeTag(it, "/show/5220.html") },
+        tags = listOf("日语", "tv").map { AnimeTag(it, "/show/5220.html") },
         state = "更新至6集",
         description = "《我们的重制人生》电视动画《我们的重制人生》改编自木绪なち原作、えれっと负责插画的同名轻小说作品，于2019年12月20日宣布了动画化企划进行中的消息。该片由feel 负责制作，于2021年7月起播出 [ 突然醒来后，我发现自己回到了10年前的今天。 我，桥场恭也是前途黯淡途的游戏导演。公司破产，企划也夭折了，于是回到了老家…… 不想再看到明星创作者们的亮眼表现，我闷闷不乐地睡着之后再醒来，发现自己不知为什么回到了十年前大学入学的时刻！？ 考上了原本应该落榜的大学，迎接向往的艺大生活，甚至还过着男女四人一起分租的同居生活，玫瑰色的每一天就此展开！我的人生道路将从这里开始重新塑造—— 与未来将会超有名的创作者一起度过的新生活就要开始了！ 尽管如此自信满满地跨出第一步，事情却似乎没有那么顺利…",
         episodeList = listOf(

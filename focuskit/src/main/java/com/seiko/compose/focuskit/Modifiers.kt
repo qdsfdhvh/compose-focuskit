@@ -1,34 +1,48 @@
 package com.seiko.compose.focuskit
 
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 
-inline fun Modifier.onPreviewTvKeyEvent(
-  crossinline onPreviewKeyEvent: (TvKeyEvent) -> Boolean
+fun Modifier.onPreviewFocusDirection(
+  onPreviewFocusDirection: (FocusDirection) -> Boolean
 ) = this.onPreviewKeyEvent {
-  controllerKey(it)?.run(onPreviewKeyEvent) ?: false
+  getFocusDirection(it)?.run(onPreviewFocusDirection) ?: false
 }
 
-inline fun Modifier.onTvKeyEvent(
-  crossinline onKeyEvent: (TvKeyEvent) -> Boolean
+fun Modifier.onFocusDirection(
+  onFocusDirection: (FocusDirection) -> Boolean
 ) = this.onKeyEvent {
-  controllerKey(it)?.run(onKeyEvent) ?: false
+  getFocusDirection(it)?.run(onFocusDirection) ?: false
 }
 
-inline fun Modifier.handleTvKey(
-  key: TvKeyEvent,
-  crossinline onAction: () -> Boolean
-) = this.onTvKeyEvent {
-  if (it == key) onAction()
+fun Modifier.handleDirection(
+  focusDirection: FocusDirection,
+  onAction: () -> Boolean
+) = this.onFocusDirection {
+  if (it == focusDirection) onAction()
   else false
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
+fun Modifier.handleEnter(onAction: () -> Unit) =
+  handleDirection(FocusDirection.In) { onAction(); true }
+
+@OptIn(ExperimentalComposeUiApi::class)
+fun Modifier.handleBack(onAction: () -> Unit) =
+  handleDirection(FocusDirection.Out) { onAction(); true }
+
+@OptIn(ExperimentalComposeUiApi::class)
+fun Modifier.handleEnterReturn(onAction: () -> Boolean) =
+  handleDirection(FocusDirection.In, onAction)
+
+@OptIn(ExperimentalComposeUiApi::class)
+fun Modifier.handleBackReturn(onAction: () -> Boolean) =
+  handleDirection(FocusDirection.Out, onAction)
+
+@OptIn(ExperimentalComposeUiApi::class)
 fun Modifier.focusClick(onClick: () -> Unit) =
-  this
-    .clickable(onClick = onClick)
-    .handleTvKey(TvKeyEvent.Enter) {
-      onClick()
-      true
-    }
+  clickable(onClick = onClick).handleEnter(onClick)

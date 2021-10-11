@@ -2,9 +2,6 @@ package com.seiko.compose.focuskit.demo.ui.foundation
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
@@ -16,25 +13,28 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.autoSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusOrder
+import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.seiko.compose.focuskit.collectFocusIndexAsState
+import com.seiko.compose.focuskit.ScrollBehaviour
 import com.seiko.compose.focuskit.createRefs
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 import com.seiko.compose.focuskit.demo.ui.theme.backgroundColor
-import com.seiko.compose.focuskit.focusScrollHorizontal
-import com.seiko.compose.focuskit.requestFocus
+import com.seiko.compose.focuskit.scrollToIndex
 
 @Composable
 fun TvTabBar(
@@ -42,33 +42,41 @@ fun TvTabBar(
   modifier: Modifier = Modifier,
 ) {
   val state = rememberLazyListState()
-  val focusIndex by state.interactionSource.collectFocusIndexAsState()
+
   var isParentFocused by remember { mutableStateOf(false) }
   val focusRequesters = remember(tabList) { FocusRequester.createRefs(tabList.size) }
+  var focusIndex by rememberSaveable(stateSaver = autoSaver()) { mutableStateOf(0) }
 
   LazyRow(
     state = state,
     modifier = modifier
       .onFocusChanged { isParentFocused = it.hasFocus || it.isFocused }
-      .focusScrollHorizontal(state)
-      .focusable(),
+      .focusTarget(),
   ) {
     itemsIndexed(tabList) { index, title ->
-      val itemInteractionSource = remember { MutableInteractionSource() }
+      var isFocused by remember { mutableStateOf(false) }
       TvTabBarItem(
         modifier = Modifier
+          .onFocusChanged {
+            isFocused = it.isFocused
+            if (isFocused) focusIndex = index
+          }
           .focusOrder(focusRequesters[index])
-          .focusable(interactionSource = itemInteractionSource),
+          .focusTarget(),
         title = title,
-        isFocused = itemInteractionSource.collectIsFocusedAsState().value,
+        isFocused = isFocused,
         isSelected = focusIndex == index,
       )
+
+      if (isParentFocused && focusIndex == index) {
+        SideEffect { focusRequesters[index].requestFocus() }
+      }
     }
   }
 
-  LaunchedEffect(focusIndex, isParentFocused) {
-    if (isParentFocused) {
-      focusRequesters.requestFocus(focusIndex)
+  if (isParentFocused) {
+    LaunchedEffect(focusIndex) {
+      state.scrollToIndex(focusIndex, ScrollBehaviour.Horizontal)
     }
   }
 }

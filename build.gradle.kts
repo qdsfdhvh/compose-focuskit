@@ -9,7 +9,7 @@ val androidMinSdkVersion by extra(21)
 val androidSourceCompatibility by extra(JavaVersion.VERSION_11)
 val androidTargetCompatibility by extra(JavaVersion.VERSION_11)
 val jvmTargetVersion by extra("1.8")
-val composeVersion by extra("1.0.3")
+val composeVersion by extra("1.1.0-alpha05")
 val activityComposeVersion by extra("1.3.1")
 val isUploadBintray by extra(true)
 

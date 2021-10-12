@@ -10,6 +10,7 @@ val androidMinSdkVersion: Int by rootProject.extra
 val androidSourceCompatibility: JavaVersion by rootProject.extra
 val androidTargetCompatibility: JavaVersion by rootProject.extra
 val composeVersion: String by rootProject.extra
+val activityComposeVersion: String by rootProject.extra
 
 android {
   compileSdk = androidCompileSdkVersion
@@ -54,7 +55,7 @@ dependencies {
   implementation("androidx.compose.ui:ui-tooling:$composeVersion")
   implementation("androidx.compose.ui:ui-tooling-preview:$composeVersion")
   implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
-  implementation("androidx.activity:activity-compose:1.3.1")
+  implementation("androidx.activity:activity-compose:${activityComposeVersion}")
   implementation("androidx.navigation:navigation-compose:2.4.0-alpha10")
   implementation("io.coil-kt:coil-compose:1.4.0")
 

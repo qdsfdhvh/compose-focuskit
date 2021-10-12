@@ -65,18 +65,19 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     setContent {
       AnimeTvTheme {
-        CompositionLocalProvider(
-          LocalAppNavigator provides navController
-        ) {
-          Surface(
-            modifier = Modifier
-              .fillMaxSize()
-              .handleBackReturn { navController.popBackStack() },
-            color = MaterialTheme.colors.background
-          ) {
-            Router(navController, viewModel)
-          }
-        }
+        AppScreen()
+        // CompositionLocalProvider(
+        //   LocalAppNavigator provides navController
+        // ) {
+        //   Surface(
+        //     modifier = Modifier
+        //       .fillMaxSize()
+        //       .handleBackReturn { navController.popBackStack() },
+        //     color = MaterialTheme.colors.background
+        //   ) {
+        //     Router(navController, viewModel)
+        //   }
+        // }
       }
     }
   }

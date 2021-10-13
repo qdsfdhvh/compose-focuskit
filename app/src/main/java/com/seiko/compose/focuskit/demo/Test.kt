@@ -22,13 +22,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusOrder
 import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.seiko.compose.focuskit.onFocusDirection
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -40,8 +43,14 @@ fun AppScreen() {
     horizontalArrangement = Arrangement.SpaceAround,
     verticalAlignment = Alignment.CenterVertically
   ) {
-    Box1(Modifier.focusOrder(focus1) { right = focus2; left = focus2 })
-    Box2(Modifier.focusOrder(focus2) { left = focus1; right = focus1  })
+    Box1(Modifier.focusOrder(focus1) {
+      right = focus2
+      left = focus2
+    })
+    Box2(Modifier.focusOrder(focus2) {
+      left = focus1
+      right = focus1
+    })
   }
 
   SideEffect {
@@ -49,15 +58,27 @@ fun AppScreen() {
   }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun Box1(modifier: Modifier = Modifier) {
   var isParentFocused by remember { mutableStateOf(false) }
   var focusIndex by remember { mutableStateOf(0) }
 
+  val focusManager = LocalFocusManager.current
+
   LazyColumn(
     modifier = modifier
       .onFocusChanged { isParentFocused = it.isFocused }
-      // .focusTarget(),
+      .onFocusDirection {
+        when (it) {
+          FocusDirection.Left,
+          FocusDirection.Right -> {
+            focusManager.moveFocus(FocusDirection.Out)
+          }
+        }
+        false
+      }
+      .focusTarget(),
   ) {
     items(10) { index ->
       val focusRequester = remember { FocusRequester() }

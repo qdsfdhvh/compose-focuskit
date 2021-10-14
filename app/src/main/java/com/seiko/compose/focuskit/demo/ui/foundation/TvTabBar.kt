@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.seiko.compose.focuskit.ScrollBehaviour
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 import com.seiko.compose.focuskit.demo.ui.theme.backgroundColor
-import com.seiko.compose.focuskit.scrollToIndex
+import com.seiko.compose.focuskit.animateScrollToItem
 
 @Composable
 fun TvTabBar(
@@ -75,7 +75,7 @@ fun TvTabBar(
 
   if (isParentFocused) {
     LaunchedEffect(focusIndex) {
-      state.scrollToIndex(focusIndex, ScrollBehaviour.Horizontal)
+      state.animateScrollToItem(focusIndex, ScrollBehaviour.Horizontal)
     }
   }
 }

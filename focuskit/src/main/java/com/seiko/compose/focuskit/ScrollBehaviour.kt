@@ -34,6 +34,6 @@ suspend fun LazyListState.tweenAnimateScrollBy(value: Float) {
 
 private const val SCROLL_ANIMATION_DURATION = 150
 
-suspend fun LazyListState.scrollToIndex(focusIndex: Int, scrollBehaviour: ScrollBehaviour) {
+suspend fun LazyListState.animateScrollToItem(focusIndex: Int, scrollBehaviour: ScrollBehaviour) {
   scrollBehaviour.onScroll(this, focusIndex)
 }

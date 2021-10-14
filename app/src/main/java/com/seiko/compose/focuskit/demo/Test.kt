@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +32,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.seiko.compose.focuskit.ScrollBehaviour
+import com.seiko.compose.focuskit.animateScrollToItem
 import com.seiko.compose.focuskit.onFocusDirection
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -64,9 +67,12 @@ fun Box1(modifier: Modifier = Modifier) {
   var isParentFocused by remember { mutableStateOf(false) }
   var focusIndex by remember { mutableStateOf(0) }
 
+  val listState = rememberLazyListState()
+
   val focusManager = LocalFocusManager.current
 
   LazyColumn(
+    state = listState,
     modifier = modifier
       .onFocusChanged { isParentFocused = it.isFocused }
       .onFocusDirection {
@@ -107,6 +113,10 @@ fun Box1(modifier: Modifier = Modifier) {
         }
       }
     }
+  }
+
+  LaunchedEffect(focusIndex) {
+    listState.animateScrollToItem(focusIndex, ScrollBehaviour.Vertical)
   }
 }
 

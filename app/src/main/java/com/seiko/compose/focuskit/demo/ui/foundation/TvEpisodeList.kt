@@ -36,7 +36,7 @@ import com.seiko.compose.focuskit.demo.model.AnimeEpisode
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 import com.seiko.compose.focuskit.demo.ui.theme.backgroundColor
 import com.seiko.compose.focuskit.focusClick
-import com.seiko.compose.focuskit.scrollToIndex
+import com.seiko.compose.focuskit.animateScrollToItem
 
 @Composable
 fun TvEpisodeList(
@@ -88,7 +88,7 @@ fun TvEpisodeList(
 
   if (isParentFocused) {
     LaunchedEffect(focusIndex) {
-      state.scrollToIndex(focusIndex, ScrollBehaviour.Horizontal)
+      state.animateScrollToItem(focusIndex, ScrollBehaviour.Horizontal)
     }
   }
 }

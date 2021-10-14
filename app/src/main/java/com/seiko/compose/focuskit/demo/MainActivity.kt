@@ -11,10 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
@@ -43,8 +40,7 @@ import com.seiko.compose.focuskit.demo.ui.foundation.TvTabBar
 import com.seiko.compose.focuskit.demo.ui.foundation.TvTitleGroup
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 import com.seiko.compose.focuskit.handleBack
-import com.seiko.compose.focuskit.handleBackReturn
-import com.seiko.compose.focuskit.scrollToIndex
+import com.seiko.compose.focuskit.animateScrollToItem
 import com.seiko.compose.player.TvVideoPlayer
 import com.seiko.compose.player.VideoPlayerSource
 import com.seiko.compose.player.rememberPlayer
@@ -159,7 +155,7 @@ fun HomeScreen(
 
   LaunchedEffect(focusIndex) {
     Log.d("Focuskit", "home move to focusIndex=$focusIndex")
-    state.scrollToIndex(focusIndex, ScrollBehaviour.Vertical)
+    state.animateScrollToItem(focusIndex, ScrollBehaviour.Vertical)
   }
 }
 
@@ -223,7 +219,7 @@ fun DetailScreen(detail: AnimeDetail) {
   }
 
   LaunchedEffect(focusIndex) {
-    state.scrollToIndex(focusIndex, ScrollBehaviour.Vertical)
+    state.animateScrollToItem(focusIndex, ScrollBehaviour.Vertical)
   }
 }
 

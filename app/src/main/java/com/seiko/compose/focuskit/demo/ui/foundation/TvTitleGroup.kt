@@ -43,7 +43,7 @@ import com.seiko.compose.focuskit.demo.model.Anime
 import com.seiko.compose.focuskit.demo.ui.theme.AnimeTvTheme
 import com.seiko.compose.focuskit.demo.ui.theme.backgroundColor
 import com.seiko.compose.focuskit.focusClick
-import com.seiko.compose.focuskit.scrollToIndex
+import com.seiko.compose.focuskit.animateScrollToItem
 
 @Composable
 fun TvTitleGroup(
@@ -95,7 +95,7 @@ fun TvTitleGroup(
 
   if (isParentFocused) {
     LaunchedEffect(focusIndex) {
-      state.scrollToIndex(focusIndex, ScrollBehaviour.Horizontal)
+      state.animateScrollToItem(focusIndex, ScrollBehaviour.Horizontal)
     }
   }
 }

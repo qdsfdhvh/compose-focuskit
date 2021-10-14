@@ -92,10 +92,4 @@ fun TvVideoPlayer(
       MediaControlKeyEvent(modifier = Modifier.matchParentSize())
     }
   }
-
-  DisposableEffect(Unit) {
-    onDispose {
-      player.release()
-    }
-  }
 }

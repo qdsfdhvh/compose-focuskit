@@ -1,6 +1,7 @@
 package com.seiko.compose.player.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -40,6 +41,12 @@ fun MediaPlayerLayout(player: Player, modifier: Modifier = Modifier) {
         controller.pause()
       }
     })
+  }
+
+  DisposableEffect(Unit) {
+    onDispose {
+      player.release()
+    }
   }
 }
 
